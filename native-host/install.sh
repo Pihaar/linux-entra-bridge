@@ -43,7 +43,7 @@ create_manifest() {
   "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",
   "path": "$HOST_SCRIPT",
   "type": "stdio",
-  "allowed_extensions": ["entra-bridge@linux-entra-bridge"]
+  "allowed_extensions": ["entra-bridge@linux-entra-bridge", "entra-bridge@linux-entra-bridge.tb"]
 }
 EOF
     echo "  Installed: $target_dir/linux_entra_bridge.json ($browser_name)"
@@ -60,22 +60,10 @@ if [[ "${1:-}" == "--librewolf" ]] || command -v librewolf &>/dev/null; then
     create_manifest "$HOME/.librewolf/native-messaging-hosts" "LibreWolf"
 fi
 
-# Thunderbird (separate NM path from Firefox)
-if command -v thunderbird &>/dev/null || [ -d "$HOME/.thunderbird" ]; then
-    local tb_nm_dir="$HOME/.thunderbird/native-messaging-hosts"
-    mkdir -p "$tb_nm_dir"
-    cat > "$tb_nm_dir/linux_entra_bridge.json" << TBEOF
-{
-  "name": "linux_entra_bridge",
-  "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",
-  "path": "$HOST_SCRIPT",
-  "type": "stdio",
-  "allowed_extensions": ["entra-bridge@linux-entra-bridge.tb"]
-}
-TBEOF
-    echo "  Installed: $tb_nm_dir/linux_entra_bridge.json (Thunderbird)"
-    chmod 0644 "$tb_nm_dir/linux_entra_bridge.json"
-fi
+# Thunderbird uses the SAME native-messaging dir and host name as Firefox
+# (~/.mozilla/native-messaging-hosts). No separate manifest is needed; the
+# Firefox manifest above already lists the Thunderbird gecko id in
+# allowed_extensions. (Firefox/TB do not search ~/.thunderbird for NM hosts.)
 
 # Chromium-based browsers
 for chromium_dir in \

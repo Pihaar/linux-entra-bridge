@@ -26,7 +26,7 @@ package() {
   "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",
   "path": "/usr/lib/$pkgname/linux_entra_bridge.py",
   "type": "stdio",
-  "allowed_extensions": ["entra-bridge@linux-entra-bridge"]
+  "allowed_extensions": ["entra-bridge@linux-entra-bridge", "entra-bridge@linux-entra-bridge.tb"]
 }
 JSON
   install -d "$pkgdir/usr/lib/librewolf/native-messaging-hosts"

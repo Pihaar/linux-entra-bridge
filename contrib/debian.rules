@@ -16,7 +16,7 @@ override_dh_auto_install:
 	install -Dm755 native-host/linux_entra_bridge.py $(DESTDIR)/usr/lib/$(PKG)/linux_entra_bridge.py
 	sed -i '1s|#!/usr/bin/env python3|#!/usr/bin/python3|' $(DESTDIR)/usr/lib/$(PKG)/linux_entra_bridge.py
 	install -d $(DESTDIR)/usr/lib/mozilla/native-messaging-hosts
-	printf '{\n  "name": "linux_entra_bridge",\n  "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",\n  "path": "/usr/lib/$(PKG)/linux_entra_bridge.py",\n  "type": "stdio",\n  "allowed_extensions": ["entra-bridge@linux-entra-bridge"]\n}\n' > $(DESTDIR)/usr/lib/mozilla/native-messaging-hosts/linux_entra_bridge.json
+	printf '{\n  "name": "linux_entra_bridge",\n  "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",\n  "path": "/usr/lib/$(PKG)/linux_entra_bridge.py",\n  "type": "stdio",\n  "allowed_extensions": ["entra-bridge@linux-entra-bridge", "entra-bridge@linux-entra-bridge.tb"]\n}\n' > $(DESTDIR)/usr/lib/mozilla/native-messaging-hosts/linux_entra_bridge.json
 	install -d $(DESTDIR)/usr/lib/librewolf/native-messaging-hosts
 	ln -sf /usr/lib/mozilla/native-messaging-hosts/linux_entra_bridge.json $(DESTDIR)/usr/lib/librewolf/native-messaging-hosts/linux_entra_bridge.json
 	install -d $(DESTDIR)/etc/chromium/native-messaging-hosts
