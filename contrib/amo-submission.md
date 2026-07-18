@@ -166,3 +166,7 @@ Remote code: select "No, I am not using remote code." If a justification field i
 Data usage: declare NO data categories as collected, then tick the three certification checkboxes (data is not sold, not used for unrelated purposes, not used for creditworthiness). Privacy policy: https://github.com/Pihaar/linux-entra-bridge/blob/main/PRIVACY.md
 
 Publisher contact email (account-level, one-time): set and verify a contact email in the developer settings before publishing. Use a private or GitHub noreply address, not a corporate one. This applies to all your extensions, not just this one.
+
+**Test instructions (CWS "Testing instructions": credentials + additional instructions):**
+Leave the credentials field empty. There is no test account and none is needed. The additional-instructions field has a 500-character limit; paste this (499 chars):
+> No test account exists or is needed; the extension has no login of its own. Its function requires a Linux device enrolled in Microsoft Intune with the microsoft-identity-broker service on D-Bus, so it cannot run in a standard review VM. A companion native host (open-source Python) fetches a PRT SSO cookie from that local broker; the extension sets it on the Microsoft sign-in domains. No outbound requests, no data sent to anyone, token in memory only. Source: github.com/Pihaar/linux-entra-bridge
