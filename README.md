@@ -2,6 +2,9 @@
 
 Cross-browser extension that enables Microsoft Entra ID (Azure AD) SSO on Linux by communicating with the `microsoft-identity-broker` D-Bus service.
 
+[![OBS build](https://build.opensuse.org/projects/home:Pihaar:linux-entra-bridge/packages/linux-entra-bridge/badge.svg?type=default)](https://build.opensuse.org/package/show/home:Pihaar:linux-entra-bridge/linux-entra-bridge)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 ## Problem
 
 On Linux, Microsoft Entra ID conditional access (Intune device compliance) only works in Microsoft Edge. Firefox, LibreWolf, Chromium, Brave, and Vivaldi cannot authenticate to Entra ID-protected services because they lack integration with the Microsoft Identity Broker.
@@ -62,6 +65,41 @@ Browser (Firefox / LibreWolf / Chromium / Brave / Vivaldi)
 - Python 3.9+ with `dbus-python`
 
 ## Installation
+
+### Pre-built packages (openSUSE Build Service)
+
+The `linux-entra-bridge` package installs the native messaging host system-wide and the unpacked extension under `/usr/share/linux-entra-bridge/extension` (for Chromium/Brave/Vivaldi). Firefox users additionally install the signed `.xpi` from AMO.
+
+**openSUSE Tumbleweed**
+```sh
+sudo zypper addrepo https://download.opensuse.org/repositories/home:Pihaar:linux-entra-bridge/openSUSE_Tumbleweed/home:Pihaar:linux-entra-bridge.repo
+sudo zypper refresh && sudo zypper install linux-entra-bridge
+```
+**openSUSE Leap 15.6**
+```sh
+sudo zypper addrepo https://download.opensuse.org/repositories/home:Pihaar:linux-entra-bridge/15.6/home:Pihaar:linux-entra-bridge.repo
+sudo zypper refresh && sudo zypper install linux-entra-bridge
+```
+**Fedora 43**
+```sh
+sudo dnf config-manager --add-repo https://download.opensuse.org/repositories/home:Pihaar:linux-entra-bridge/Fedora_43/home:Pihaar:linux-entra-bridge.repo
+sudo dnf install linux-entra-bridge
+```
+**RockyLinux 9** (binary-compatible with RHEL 9, which is not on OBS)
+```sh
+sudo dnf config-manager --add-repo https://download.opensuse.org/repositories/home:Pihaar:linux-entra-bridge/RockyLinux_9/home:Pihaar:linux-entra-bridge.repo
+sudo dnf install linux-entra-bridge
+```
+**Debian 13**
+```sh
+echo 'deb [signed-by=/etc/apt/keyrings/home_Pihaar_linux-entra-bridge.gpg] https://download.opensuse.org/repositories/home:/Pihaar:/linux-entra-bridge/Debian_13/ /' | sudo tee /etc/apt/sources.list.d/home_Pihaar_linux-entra-bridge.list
+curl -fsSL https://download.opensuse.org/repositories/home:/Pihaar:/linux-entra-bridge/Debian_13/Release.key | gpg --dearmor | sudo tee /etc/apt/keyrings/home_Pihaar_linux-entra-bridge.gpg > /dev/null
+sudo apt update && sudo apt install linux-entra-bridge
+```
+
+More distributions (Leap 16, SLFO/SLE, CentOS Stream, Ubuntu, Arch, and others) are on the [OBS project page](https://build.opensuse.org/project/show/home:Pihaar:linux-entra-bridge).
+
+To build from source instead, use the steps below.
 
 ### 1. Install native messaging host
 
