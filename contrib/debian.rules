@@ -1,0 +1,33 @@
+#!/usr/bin/make -f
+export DH_VERBOSE = 1
+
+PKG = linux-entra-bridge
+DESTDIR = debian/$(PKG)
+
+%:
+	dh $@
+
+# noarch: nothing to configure/build/test
+override_dh_auto_configure:
+override_dh_auto_build:
+override_dh_auto_test:
+
+override_dh_auto_install:
+	install -Dm755 native-host/linux_entra_bridge.py $(DESTDIR)/usr/lib/$(PKG)/linux_entra_bridge.py
+	sed -i '1s|#!/usr/bin/env python3|#!/usr/bin/python3|' $(DESTDIR)/usr/lib/$(PKG)/linux_entra_bridge.py
+	install -d $(DESTDIR)/usr/lib/mozilla/native-messaging-hosts
+	printf '{\n  "name": "linux_entra_bridge",\n  "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",\n  "path": "/usr/lib/$(PKG)/linux_entra_bridge.py",\n  "type": "stdio",\n  "allowed_extensions": ["entra-bridge@linux-entra-bridge"]\n}\n' > $(DESTDIR)/usr/lib/mozilla/native-messaging-hosts/linux_entra_bridge.json
+	install -d $(DESTDIR)/usr/lib/librewolf/native-messaging-hosts
+	ln -sf /usr/lib/mozilla/native-messaging-hosts/linux_entra_bridge.json $(DESTDIR)/usr/lib/librewolf/native-messaging-hosts/linux_entra_bridge.json
+	install -d $(DESTDIR)/etc/chromium/native-messaging-hosts
+	printf '{\n  "name": "linux_entra_bridge",\n  "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",\n  "path": "/usr/lib/$(PKG)/linux_entra_bridge.py",\n  "type": "stdio",\n  "allowed_origins": ["chrome-extension://fldaignoojobnhfafojdhekiiboameoe/"]\n}\n' > $(DESTDIR)/etc/chromium/native-messaging-hosts/linux_entra_bridge.json
+	install -d $(DESTDIR)/etc/opt/chrome/native-messaging-hosts
+	ln -sf /etc/chromium/native-messaging-hosts/linux_entra_bridge.json $(DESTDIR)/etc/opt/chrome/native-messaging-hosts/linux_entra_bridge.json
+	install -d $(DESTDIR)/etc/brave-browser/native-messaging-hosts
+	ln -sf /etc/chromium/native-messaging-hosts/linux_entra_bridge.json $(DESTDIR)/etc/brave-browser/native-messaging-hosts/linux_entra_bridge.json
+	install -d $(DESTDIR)/etc/vivaldi/native-messaging-hosts
+	ln -sf /etc/chromium/native-messaging-hosts/linux_entra_bridge.json $(DESTDIR)/etc/vivaldi/native-messaging-hosts/linux_entra_bridge.json
+	install -d $(DESTDIR)/usr/share/$(PKG)/extension
+	cp extension/*.js extension/*.html extension/*.css $(DESTDIR)/usr/share/$(PKG)/extension/
+	cp manifests/chromium.json $(DESTDIR)/usr/share/$(PKG)/extension/manifest.json
+	cp -r extension/icons $(DESTDIR)/usr/share/$(PKG)/extension/

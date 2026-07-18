@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Linux Entra Bridge",
+  "version": "0.1.0",
+  "description": "Enables Microsoft Entra ID SSO on Linux via the microsoft-identity-broker D-Bus service",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "entra-bridge@linux-entra-bridge.tb",
+      "strict_min_version": "128.0"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png"
+    },
+    "allowed_spaces": ["mail", "calendar", "addressbook", "tasks", "settings", "default"]
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "type": "module"
+  },
+  "permissions": [
+    "cookies",
+    "storage",
+    "nativeMessaging",
+    "alarms",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "https://login.microsoftonline.com/*",
+    "https://login.microsoft.com/*",
+    "https://login.live.com/*"
+  ]
+}

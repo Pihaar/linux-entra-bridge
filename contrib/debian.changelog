@@ -1,0 +1,5 @@
+linux-entra-bridge (0.1.0) unstable; urgency=low
+
+  * Initial release. See https://github.com/Pihaar/linux-entra-bridge for details.
+
+ -- Patrick Haar <Pihaar@users.noreply.github.com>  Sat, 18 Jul 2026 18:00:00 +0200

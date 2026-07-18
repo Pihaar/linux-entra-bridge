@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+*.log
+node_modules/
+web-ext-artifacts/
+tmp/
+rpmbuild/
+coverage/
+.amo-upload-uuid
+.pytest_cache/
+.ruff_cache/

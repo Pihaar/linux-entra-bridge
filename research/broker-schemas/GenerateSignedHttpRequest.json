@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "type":"object",
+  "properties":{
+    "clientId":{
+      "description":"clientId",
+      "type":"string"
+    },
+    "popParams":{
+      "description":"PopParams",
+      "$ref":"PopParams.json"
+    }
+  }
+}

@@ -1,0 +1,60 @@
+# Maintainer: Patrick Haar <Pihaar@users.noreply.github.com>
+pkgname=linux-entra-bridge
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Microsoft Entra ID SSO bridge for Linux browsers via the identity broker'
+arch=('any')
+url='https://github.com/Pihaar/linux-entra-bridge'
+license=('MIT')
+depends=('python' 'python-dbus')
+source=("$pkgname-$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+package() {
+  cd "$pkgname-$pkgver"
+  local host_dir="$pkgdir/usr/lib/$pkgname"
+
+  # Native messaging host
+  install -Dm755 native-host/linux_entra_bridge.py "$host_dir/linux_entra_bridge.py"
+  sed -i '1s|#!/usr/bin/env python3|#!/usr/bin/python3|' "$host_dir/linux_entra_bridge.py"
+
+  # Firefox / LibreWolf native messaging host manifest
+  install -d "$pkgdir/usr/lib/mozilla/native-messaging-hosts"
+  cat > "$pkgdir/usr/lib/mozilla/native-messaging-hosts/linux_entra_bridge.json" <<JSON
+{
+  "name": "linux_entra_bridge",
+  "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",
+  "path": "/usr/lib/$pkgname/linux_entra_bridge.py",
+  "type": "stdio",
+  "allowed_extensions": ["entra-bridge@linux-entra-bridge"]
+}
+JSON
+  install -d "$pkgdir/usr/lib/librewolf/native-messaging-hosts"
+  ln -sf /usr/lib/mozilla/native-messaging-hosts/linux_entra_bridge.json \
+         "$pkgdir/usr/lib/librewolf/native-messaging-hosts/linux_entra_bridge.json"
+
+  # Chromium native messaging host manifest (+ Chrome/Brave/Vivaldi symlinks)
+  install -d "$pkgdir/etc/chromium/native-messaging-hosts"
+  cat > "$pkgdir/etc/chromium/native-messaging-hosts/linux_entra_bridge.json" <<JSON
+{
+  "name": "linux_entra_bridge",
+  "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",
+  "path": "/usr/lib/$pkgname/linux_entra_bridge.py",
+  "type": "stdio",
+  "allowed_origins": ["chrome-extension://fldaignoojobnhfafojdhekiiboameoe/"]
+}
+JSON
+  for d in etc/opt/chrome etc/brave-browser etc/vivaldi; do
+    install -d "$pkgdir/$d/native-messaging-hosts"
+    ln -sf /etc/chromium/native-messaging-hosts/linux_entra_bridge.json \
+           "$pkgdir/$d/native-messaging-hosts/linux_entra_bridge.json"
+  done
+
+  # Extension source (Chromium unpacked load)
+  install -d "$pkgdir/usr/share/$pkgname/extension"
+  cp extension/*.js extension/*.html extension/*.css "$pkgdir/usr/share/$pkgname/extension/"
+  cp manifests/chromium.json "$pkgdir/usr/share/$pkgname/extension/manifest.json"
+  cp -r extension/icons "$pkgdir/usr/share/$pkgname/extension/"
+
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

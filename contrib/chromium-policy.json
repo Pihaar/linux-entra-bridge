@@ -1,0 +1,22 @@
+{
+  "ExtensionInstallAllowlist": [
+    "fldaignoojobnhfafojdhekiiboameoe"
+  ],
+  "ExtensionSettings": {
+    "fldaignoojobnhfafojdhekiiboameoe": {
+      "installation_mode": "allowed",
+      "toolbar_pin": "force_pinned"
+    }
+  },
+  "3rdparty": {
+    "extensions": {
+      "fldaignoojobnhfafojdhekiiboameoe": {
+        "spaAllowedDomains": [
+          "teams.microsoft.com",
+          "outlook.office.com",
+          "portal.azure.com"
+        ]
+      }
+    }
+  }
+}

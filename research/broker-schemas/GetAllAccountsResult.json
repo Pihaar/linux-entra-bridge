@@ -1,0 +1,21 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "type":"object",
+  "properties":{
+    "error":{
+      "description":"Error",
+      "$ref":"Error.json"
+    },
+    "accounts":{
+      "description":"Accounts",
+      "type":"array",
+      "items":{
+        "$ref":"Account.json"
+      }
+    },
+    "telemetry":{
+      "description":"telemetry data",
+      "type":"object"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "linux-entra-bridge",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "9.39.4",
+    "@vitest/coverage-v8": "4.1.4",
+    "eslint": "9.39.4",
+    "jsdom": "26.1.0",
+    "vitest": "4.1.4",
+    "web-ext": "10.4.0"
+  },
+  "overrides": {
+    "uuid": "^14.0.0",
+    "tmp": ">=0.2.7"
+  },
+  "scripts": {
+    "test": "vitest run --reporter=verbose"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "description":"Object holding auth error information",
+  "type":"object",
+  "properties":{
+    "context":{
+      "type":"string",
+      "description":"API name the error occurred in"
+    },
+    "tag":{
+      "type":"integer",
+      "description":"Tag representing the code path failure occurred in"
+    },
+    "errorCode":{
+      "type":"integer",
+      "description":"System error code used for logging and telemetry."
+    },
+    "status":{
+      "type":"integer",
+      "description":"Status used for control flow"
+    },
+    "subStatus":{
+      "type":"integer",
+      "description":"Sub status that optionally can be used for control flow"
+    },
+    "diagnostics":{
+      "description":"Additional diagnostic info about the failure",
+      "type":"object"
+    }
+  }
+}

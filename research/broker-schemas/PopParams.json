@@ -1,0 +1,35 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "description":"Parameters used for requesting proof of possession access tokens",
+  "type":"object",
+  "properties":{
+    "httpMethod":{
+      "type":"string",
+      "description":"Http method used for generating authorization header in POP flow"
+    },
+    "uriHost":{
+      "type":"string",
+      "description":"HTTP URL Host Component used for generating authorization header in POP flow"
+    },
+    "uriPath":{
+      "type":"string",
+      "description":"HTTP URL Path Component used for generating authorization header in POP flow"
+    },
+    "nonce":{
+      "type":"string",
+      "description":"Nonce used for generating authorization header in POP flow"
+    },
+    "clientClaims":{
+      "type":"string",
+      "description":"Used to pass additional client data in POP flow"
+    },
+    "homeAccountId":{
+      "type":"string",
+      "description":"Used to disambiguate the key to be used for signing in POP flow"
+    },
+    "kid":{
+      "type":"string",
+      "description":"Key ID supplied and owned by the calling application"
+    }
+  }
+}

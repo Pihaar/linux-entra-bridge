@@ -1,0 +1,30 @@
+#!/bin/bash
+set -euo pipefail
+echo "Running pre-commit checks..."
+
+# Python syntax check
+python3 -m py_compile native-host/linux_entra_bridge.py
+
+# Bash syntax check
+bash -n native-host/install.sh
+
+# Python linting
+ruff check native-host/
+
+# JS syntax check (all extension JS files)
+for js in extension/background.js extension/popup.js extension/options.js extension/lib.js extension/popup-init.js extension/options-init.js; do
+    node --check "$js"
+done
+
+# JS linting
+npx eslint extension/
+
+# JSON syntax check (contrib + manifests)
+python3 -c "import json, sys; json.load(sys.stdin)" < contrib/chromium-policy.json
+python3 -c "import json, sys; json.load(sys.stdin)" < manifests/firefox.json
+python3 -c "import json, sys; json.load(sys.stdin)" < manifests/chromium.json
+
+# Version consistency
+make check-version
+
+echo "Pre-commit checks passed."

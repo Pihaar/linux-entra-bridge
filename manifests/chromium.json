@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "Linux Entra Bridge",
+  "version": "0.1.0",
+  "description": "Enables Microsoft Entra ID SSO on Linux via the microsoft-identity-broker D-Bus service",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt93mgkfVItrcqac4uqP2r5CHi5ZLJ5gD2okwrX8IwHlKKlIp3E6o7f7LmUuf3WNJTx3B7CCrEcwNYwWD4phmIffA9LyJrz74bogEosgku0WjT88z6NkYNLk1UDv2fCAUrILs5+I7ASmXCso4n/eAOQ3ItquolZ3l7gT92J0xo0KPpFyxco5uQU+ja9xkpiigsLl6RAws+OhZC0STcq5LXA8VFP0SbYg0OK9tYzsGCz1jtt7t5EAUUV7GOrYATsoeWaFh1m1iISsp6EOOEp8Bs8OVoPgkU5bFbGXy7jgJYO/obrJMg/qjFHW5JqHWkYIWlGrtECRYnd3CIwpkYfWlrwIDAQAB",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": [
+    "cookies",
+    "storage",
+    "nativeMessaging",
+    "alarms",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "https://login.microsoftonline.com/*",
+    "https://login.microsoft.com/*",
+    "https://login.live.com/*"
+  ],
+  "optional_host_permissions": [
+    "https://graph.microsoft.com/*",
+    "https://*.microsoft.com/*",
+    "https://*.microsoftonline.com/*",
+    "https://*.office.com/*",
+    "https://*.office365.com/*",
+    "https://*.sharepoint.com/*",
+    "https://*.azure.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Linux Entra Bridge",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "options_ui": {
+    "page": "options.html"
+  }
+}

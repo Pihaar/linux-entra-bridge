@@ -1,0 +1,63 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "description":"Object holding token response data",
+  "type":"object",
+  "properties":{
+    "accessToken":{
+      "type":"string",
+      "description":"accessToken"
+    },
+    "expiresOn":{
+      "type":"integer",
+      "description":"expiresOn"
+    },
+    "extendedExpiresOn":{
+      "type":"integer",
+      "description":"extendedExpiresOn"
+    },
+    "idToken":{
+      "type":"string",
+      "description":"idToken"
+    },
+    "clientInfo":{
+      "type":"string",
+      "description":"clientInfo"
+    },
+    "accountId":{
+      "type":"string",
+      "description":"accountId"
+    },
+    "grantedScopes":{
+      "type":"string",
+      "description":"grantedScopes"
+    },
+    "refreshToken":{
+      "type":"string",
+      "description":"On most platform broker should not return RT to the caller."
+    },
+    "responseProperties":{
+      "description":"Platform specific response properties",
+      "type":"object",
+      "items":{
+        "name":"string",
+        "value":"string"
+      }
+    },
+    "accessTokenType":{
+      "type":"integer",
+      "description":"AccessTokenType (signed or unsigned AT)"
+    },
+    "account":{
+      "description":"Account",
+      "$ref":"Account.json"
+    },
+    "error":{
+      "description":"Error",
+      "$ref":"Error.json"
+    },
+    "stsSubError":{
+      "type":"string",
+      "description":"subError"
+    }
+  }
+}

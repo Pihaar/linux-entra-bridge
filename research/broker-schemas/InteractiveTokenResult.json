@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "type":"object",
+  "properties":{
+    "brokerTokenResponse":{
+      "description":"Broker token response",
+      "$ref":"BrokerTokenResponse.json"
+    },
+    "telemetry":{
+      "description":"telemetry data",
+      "type":"object"
+    }
+  }
+}

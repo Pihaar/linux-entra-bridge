@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <h2>Linux Entra Bridge Settings</h2>
+
+  <div class="section">
+    <div class="section-title">Debugging</div>
+    <label>
+      <input type="checkbox" id="debugMode"> Enable verbose console logging
+    </label>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Device Compliance</div>
+    <label>
+      <input type="checkbox" id="complianceMode"> Show device compliance status in popup
+    </label>
+    <div class="hint">Queries MS Graph API for device compliance state. Requires graph.microsoft.com permission.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Broker</div>
+    <button id="checkBroker">Check Broker Status</button>
+    <div id="status"></div>
+    <pre id="brokerInfo" style="display:none"></pre>
+  </div>
+
+  <script type="module" src="options-init.js"></script>
+</body>
+</html>

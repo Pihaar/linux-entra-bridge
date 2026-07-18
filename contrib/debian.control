@@ -1,0 +1,18 @@
+Source: linux-entra-bridge
+Section: web
+Priority: optional
+Maintainer: Patrick Haar <Pihaar@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Homepage: https://github.com/Pihaar/linux-entra-bridge
+Rules-Requires-Root: no
+
+Package: linux-entra-bridge
+Architecture: all
+Depends: ${misc:Depends}, python3 (>= 3.6), python3-dbus
+Description: Microsoft Entra ID SSO bridge for Linux browsers
+ Enables Microsoft Entra ID single sign-on in Firefox, Chromium, and related
+ browsers on Linux by bridging to the microsoft-identity-broker D-Bus service.
+ A native messaging host obtains the PRT SSO cookie from the broker and the
+ browser extension sets it, so the browser can satisfy Conditional Access
+ policies that otherwise only work in Microsoft Edge.

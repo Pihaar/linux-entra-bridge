@@ -1,0 +1,18 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "type":"object",
+  "properties":{
+    "clientId":{
+      "description":"clientId",
+      "type":"string"
+    },
+    "redirectUri":{
+      "description":"redirect uri of the calling app",
+      "type":"string"
+    },
+    "environment":{
+      "type":"string",
+      "description":"environment"
+    }
+  }
+}

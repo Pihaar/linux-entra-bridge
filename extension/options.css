@@ -1,0 +1,112 @@
+/* Theme variables are in theme.css (shared with popup.css) */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  max-width: 480px;
+  margin: 20px auto;
+  padding: 16px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h2 { margin: 0 0 16px; color: var(--text-primary); font-size: 16px; font-weight: 600; }
+
+label { display: block; margin-bottom: 12px; color: var(--text-secondary); }
+
+select, input {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+}
+
+input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 1px;
+}
+
+.section {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-title {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  transition: background var(--transition), box-shadow var(--transition);
+}
+
+button:hover {
+  background: #1a8ae8;
+  box-shadow: 0 2px 8px rgba(0, 120, 212, 0.3);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+
+#status {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  display: none;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+#status.ok {
+  display: block;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success);
+}
+
+#status.error {
+  display: block;
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error);
+}
+
+pre {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.hidden { display: none; }
+
+.hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}

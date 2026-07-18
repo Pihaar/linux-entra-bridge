@@ -1,0 +1,70 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "description":"Authentication parameters",
+  "type":"object",
+  "properties":{
+    "authorizationType":{
+      "description":"AuthorizationType",
+      "type":"integer"
+    },
+    "authority":{
+      "description":"authority",
+      "type":"string"
+    },
+    "clientId":{
+      "description":"clientId",
+      "type":"string"
+    },
+    "username":{
+      "description":"loginHint",
+      "type":"string"
+    },
+    "redirectUri":{
+      "description":"redirect uri where auth code will be posted",
+      "type":"string"
+    },
+    "password":{
+      "description":"password used for testing purposes only",
+      "type":"string"
+    },
+    "requestedScopes":{
+      "description":"requestedScopes",
+      "type":"array",
+      "items":{
+        "type":"string"
+      }
+    },
+    "accessTokenToRenew":{
+      "description":"The value of an access toke that should be ignored/bypassed in the credential cache",
+      "type":"string"
+    },
+    "decodedClaims":{
+      "description":"decoded claims sent to token endpoint",
+      "type":"string"
+    },
+    "enrollmentId":{
+      "description":"enrollmentId used for True MAM scenarios",
+      "type":"string"
+    },
+    "uxContextHandle":{
+      "description":"ContextHandle is used for parrenting windows",
+      "type":"integer"
+    },
+    "additionalQueryParametersForAuthorization":{
+      "description":"Additional QS params sent to authorize endpoint",
+      "type":"object"
+    },
+    "popParams":{
+      "description":"PopParams",
+      "$ref":"PopParams.json"
+    },
+    "account":{
+      "description":"Account",
+      "$ref":"Account.json"
+    },
+    "isSignIn": {
+      "description": "Indicates if this is a Sign In request (as opposed to Acquire Token)",
+      "type": "boolean"
+    }
+  }
+}
