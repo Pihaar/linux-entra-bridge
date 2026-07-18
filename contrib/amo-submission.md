@@ -73,24 +73,41 @@ Source code is public and unminified (vanilla JavaScript, no bundler):
 https://github.com/Pihaar/linux-entra-bridge. See SECURITY.md for the security
 model and the reverse-engineered broker protocol notes.
 
-## Thunderbird (addons.thunderbird.net)
+## Thunderbird (addons.thunderbird.net / ATN)
 
-Thunderbird uses ATN, a separate store with its own account and review, not AMO.
+ATN is a separate store from AMO: own account, own review, web-UI only (no `web-ext sign` CLI).
+Upload the file `web-ext-artifacts/entra-id-sso-thunderbird-0.1.0.xpi`. Every field below is
+self-contained; nothing needs to be copied from the Firefox section.
 
-- **Add-on ID (gecko):** `entra-bridge@linux-entra-bridge.tb`
-- **Package:** `web-ext-artifacts/entra-id-sso-thunderbird-0.1.0.xpi`
-- **strict_min_version:** 128.0 (Thunderbird 128 ESR, first MV3 release)
-- **Category / Summary / Description:** same as the Firefox listing above (same
-  functionality; in Thunderbird it applies to the Microsoft 365 / Exchange account
-  sign-in windows).
+**Compatible applications:** Thunderbird only (not SeaMonkey).
 
-Reviewer notes (ATN): same as the AMO notes above, plus one Thunderbird-specific
-point: the extension sets the PRT SSO cookie for the Microsoft sign-in domains so
-Thunderbird's built-in OAuth login window for Microsoft 365 / Exchange accounts can
-reuse the device's existing SSO session from microsoft-identity-broker. It cannot be
-tested without an Intune-enrolled Linux device running the broker.
+**Compatibility (versions):** Thunderbird 128.0 and later (`strict_min_version` 128.0). No max.
 
-Note on `data_collection_permissions`: the manifest declares `required: ["none"]`
-(no data collection), so no consent flow is needed. `web-ext lint` reports a
-`KEY_FIREFOX_UNSUPPORTED_BY_MIN_VERSION` warning for this field at strict_min_version
-128; that is a Firefox-linter artifact and does not apply to Thunderbird/ATN.
+**Add-on ID (from manifest, do not change):** `entra-bridge@linux-entra-bridge.tb`
+
+**Name:** Linux Entra Bridge
+
+**Summary:**
+Microsoft Entra ID single sign-on for Thunderbird on Linux. It bridges to the local microsoft-identity-broker so Thunderbird can reuse the device's SSO session for Microsoft 365 and Exchange accounts.
+
+**Description** (ATN takes the short description from the manifest; paste this if a full-description field is shown):
+On Linux, signing in to Microsoft 365 or Exchange accounts in Thunderbird goes through Microsoft Entra ID, where Conditional Access normally works only in Microsoft Edge. Linux Entra Bridge closes that gap.
+
+A native messaging host (open-source Python) requests the PRT single sign-on cookie from the local microsoft-identity-broker over D-Bus, and the extension sets it for the Microsoft sign-in domains. Thunderbird's account sign-in window then reuses the device's existing SSO session, without repeated logins.
+
+It requires a Linux device enrolled in Microsoft Intune with microsoft-identity-broker running, plus the native messaging host from the project page. Everything runs locally; the extension makes no network requests of its own and sends no data to the developer or any third party.
+
+**Categories:** Privacy & Security
+
+**Support site / Homepage / Source code:** https://github.com/Pihaar/linux-entra-bridge
+
+**Notes to reviewer:**
+This extension enables Microsoft Entra ID SSO for Thunderbird on Linux. It cannot be fully exercised in a standard review environment because it requires (1) a Linux device enrolled in Microsoft Intune and (2) the microsoft-identity-broker system service running and reachable on the session D-Bus. Without that broker there is no token source.
+
+How it works: a native messaging host (open-source Python, in the project repo) calls the broker over D-Bus to obtain a PRT SSO cookie; the extension writes it to the cookie store for the Microsoft sign-in domains, so Thunderbird's built-in OAuth login window for Microsoft 365 and Exchange accounts reuses the device's SSO session. The extension and host make no outbound network requests and send no data to the developer or any third party; the token is kept in memory and never written to disk.
+
+Permission justification: `cookies` (set the SSO cookie on the Microsoft sign-in domains), `nativeMessaging` (talk to the local Python host), `storage` (remember the selected account username, stored locally), `alarms` (refresh the cookie before expiry), `webNavigation` (detect the sso_nonce parameter for Conditional Access nonce flows). host_permissions cover login.microsoftonline.com, login.microsoft.com and login.live.com.
+
+Source is public and unminified (vanilla JavaScript, no bundler): https://github.com/Pihaar/linux-entra-bridge
+
+**Data collection:** none. The manifest declares `data_collection_permissions.required = ["none"]`, so no consent flow is needed. (`web-ext lint` shows a `KEY_FIREFOX_UNSUPPORTED_BY_MIN_VERSION` warning for this field at TB 128; that is a Firefox-linter artifact and does not apply to ATN.)
