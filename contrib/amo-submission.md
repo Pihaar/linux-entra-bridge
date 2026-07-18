@@ -72,3 +72,25 @@ Permission justification:
 Source code is public and unminified (vanilla JavaScript, no bundler):
 https://github.com/Pihaar/linux-entra-bridge. See SECURITY.md for the security
 model and the reverse-engineered broker protocol notes.
+
+## Thunderbird (addons.thunderbird.net)
+
+Thunderbird uses ATN, a separate store with its own account and review, not AMO.
+
+- **Add-on ID (gecko):** `entra-bridge@linux-entra-bridge.tb`
+- **Package:** `web-ext-artifacts/entra-id-sso-thunderbird-0.1.0.xpi`
+- **strict_min_version:** 128.0 (Thunderbird 128 ESR, first MV3 release)
+- **Category / Summary / Description:** same as the Firefox listing above (same
+  functionality; in Thunderbird it applies to the Microsoft 365 / Exchange account
+  sign-in windows).
+
+Reviewer notes (ATN): same as the AMO notes above, plus one Thunderbird-specific
+point: the extension sets the PRT SSO cookie for the Microsoft sign-in domains so
+Thunderbird's built-in OAuth login window for Microsoft 365 / Exchange accounts can
+reuse the device's existing SSO session from microsoft-identity-broker. It cannot be
+tested without an Intune-enrolled Linux device running the broker.
+
+Note on `data_collection_permissions`: the manifest declares `required: ["none"]`
+(no data collection), so no consent flow is needed. `web-ext lint` reports a
+`KEY_FIREFOX_UNSUPPORTED_BY_MIN_VERSION` warning for this field at strict_min_version
+128; that is a Firefox-linter artifact and does not apply to Thunderbird/ATN.
