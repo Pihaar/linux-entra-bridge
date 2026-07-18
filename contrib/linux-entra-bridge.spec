@@ -17,6 +17,11 @@ BuildRequires:  python3 >= 3.6
 Requires:       python3 >= 3.6
 Requires:       python3-dbus >= 1.2
 
+# No compiled binaries (Python + JS + JSON only): nothing belongs in a
+# debuginfo/debugsource subpackage. Disable it, otherwise Fedora/RHEL fail the
+# arch-specific build with an empty debugsource file list.
+%global debug_package %{nil}
+
 %description
 Cross-browser extension that enables Microsoft Entra ID SSO on Linux
 by communicating with the microsoft-identity-broker D-Bus service.
