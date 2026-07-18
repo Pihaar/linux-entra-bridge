@@ -122,9 +122,9 @@ make build-chromium
 
 **Firefox / LibreWolf:** Re-sign and re-install the `.xpi` (see above).
 
-**Native host:** Updates to `linux_entra_bridge.py` take effect immediately on the next browser restart — the native messaging manifest points directly to the repo clone. Only re-run `bash native-host/install.sh` if you move the repo directory or the manifest format changes.
+**Native host:** Updates to `linux_entra_bridge.py` take effect immediately on the next browser restart; the native messaging manifest points directly to the repo clone. Only re-run `bash native-host/install.sh` if you move the repo directory or the manifest format changes.
 
-> **Important:** Do not move or delete the repo clone — both the unpacked extension (Chromium) and the native messaging manifests reference files in it by absolute path.
+> **Important:** Do not move or delete the repo clone, because both the unpacked extension (Chromium) and the native messaging manifests reference files in it by absolute path.
 
 ### Enterprise Deployment
 

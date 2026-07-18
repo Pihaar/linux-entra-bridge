@@ -1,4 +1,4 @@
-# Privacy Policy — Linux Entra Bridge
+# Privacy Policy: Linux Entra Bridge
 
 _Last updated: 2026-07-18_
 
@@ -17,7 +17,7 @@ no network requests of its own.
   cookie to `login.microsoftonline.com` as part of Microsoft's own sign-in flow.
   The extension itself sends nothing anywhere.
 - **Account preference:** The extension stores a single value locally
-  (`storage.local`) — the username of the account you selected in the popup — so it
+  (`storage.local`), the username of the account you selected in the popup, so it
   can remember your choice. This never leaves your device.
 - **No token persistence:** The SSO cookie/token is held in memory only and is never
   written to disk by the extension.
@@ -34,7 +34,7 @@ the browser itself, not by the extension.
 If you explicitly opt in, the extension can query Microsoft Graph
 (`graph.microsoft.com`) to display your device's compliance status. This request is
 made only after you enable the feature, uses a token obtained locally from the
-broker, and its result is shown to you only — it is not stored or shared. Intune
+broker, and its result is shown to you only; it is not stored or shared. Intune
 remains the authoritative source; this display is informational.
 
 ## Contact

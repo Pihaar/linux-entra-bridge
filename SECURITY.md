@@ -1,4 +1,4 @@
-# Security Notes — linux-entra-bridge
+# Security Notes: linux-entra-bridge
 
 ## Classification
 
@@ -26,7 +26,7 @@ microsoft-identity-broker (system service)
 
 | Threat | Status | Implementation |
 |--------|--------|----------------|
-| XSS (innerHTML) | N/A | All DOM manipulation via `createElement()`/`textContent` — no innerHTML |
+| XSS (innerHTML) | N/A | All DOM manipulation via `createElement()`/`textContent`; no innerHTML |
 | eval/exec | N/A | No `eval()`, `Function()`, `exec()`, or dynamic code execution |
 | OS command injection | N/A | No subprocess calls, no `shell=True`, no `os.system()` |
 | Prototype pollution | Mitigated | `sanitizeAccount()` strips `__proto__`/`constructor`/`prototype` keys via `DENY_KEYS` filter |
@@ -55,7 +55,7 @@ microsoft-identity-broker (system service)
 
 - `secure: true` on all `cookies.set()` calls.
 - `sameSite: "no_restriction"` (required for cross-domain SSO).
-- `httpOnly: true` — the cookie is sent as an HTTP header automatically; JS on login pages does not need to read it, which prevents XSS-based cookie theft.
+- `httpOnly: true`: the cookie is sent as an HTTP header automatically; JS on login pages does not need to read it, which prevents XSS-based cookie theft.
 
 ### Fail securely
 
@@ -83,7 +83,7 @@ This extension communicates with the Microsoft Identity Broker using **reverse-e
 
 **Risks:** Microsoft may change these values in any broker or Edge update without notice. The broker is not covered by any public API stability guarantee.
 
-**Runtime defense:** `KNOWN_BROKER_MAJOR` is checked against the broker's reported version on each `get_status` call in `background.js`. A mismatch logs a warning visible in the popup. This does not block operation — it alerts the user.
+**Runtime defense:** `KNOWN_BROKER_MAJOR` is checked against the broker's reported version on each `get_status` call in `background.js`. A mismatch logs a warning visible in the popup. This does not block operation; it alerts the user.
 
 **Maintenance:** On each broker update, verify SSO works end-to-end. If the broker changes its protocol, update the constants in `linux_entra_bridge.py` and `KNOWN_BROKER_MAJOR` in `background.js`.
 
