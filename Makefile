@@ -1,4 +1,4 @@
-.PHONY: check install install-native build build-firefox build-chromium sign sign-listed rpm uninstall clean test test-py test-js check-version lint lint-py lint-js coverage coverage-js coverage-py
+.PHONY: check install install-native build build-firefox build-chromium build-thunderbird build-chrome-store sign sign-listed rpm uninstall clean test test-py test-js check-version lint lint-py lint-js coverage coverage-js coverage-py
 
 EXTENSION_DIR := extension
 NATIVE_DIR := native-host
@@ -48,6 +48,18 @@ build-thunderbird:
 
 # Build all platforms
 build: build-firefox build-chromium build-thunderbird
+
+# Build Chrome Web Store .zip (chromium build with the "key" field REMOVED —
+# the Web Store assigns the extension ID; the key only pins the ID for unpacked/OBS builds)
+build-chrome-store:
+	rm -rf $(BUILD_DIR)/chrome-store/pkg
+	mkdir -p $(BUILD_DIR)/chrome-store/pkg
+	python3 -c "import json; m=json.load(open('manifests/chromium.json')); m.pop('key', None); json.dump(m, open('$(BUILD_DIR)/chrome-store/pkg/manifest.json','w'), indent=2)"
+	cp $(EXTENSION_DIR)/*.js $(EXTENSION_DIR)/*.html $(EXTENSION_DIR)/*.css $(BUILD_DIR)/chrome-store/pkg/
+	cp -r $(EXTENSION_DIR)/icons $(BUILD_DIR)/chrome-store/pkg/
+	rm -f $(BUILD_DIR)/chrome-store/$(NAME)-$(VERSION)-cws.zip
+	cd $(BUILD_DIR)/chrome-store/pkg && zip -qr ../$(NAME)-$(VERSION)-cws.zip .
+	@echo "Built: $(BUILD_DIR)/chrome-store/$(NAME)-$(VERSION)-cws.zip (upload to Chrome Web Store; contains no key field)"
 
 # Sign Firefox extension via AMO (set WEB_EXT_API_KEY and WEB_EXT_API_SECRET env vars)
 sign:

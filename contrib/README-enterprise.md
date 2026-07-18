@@ -13,11 +13,22 @@ This guide covers deploying `linux-entra-bridge` in managed Linux desktop enviro
 
 ## Installation
 
-### Option A: RPM Package (recommended)
+### Option A: Pre-built package from OBS (recommended)
 
+Packages are built for many distributions on the [openSUSE Build Service](https://build.opensuse.org/project/show/home:Pihaar:linux-entra-bridge). Add the repository for your distribution, then install. Examples:
+
+**Fedora 43**
 ```bash
+sudo dnf config-manager --add-repo https://download.opensuse.org/repositories/home:Pihaar:linux-entra-bridge/Fedora_43/home:Pihaar:linux-entra-bridge.repo
 sudo dnf install linux-entra-bridge
 ```
+**openSUSE Tumbleweed**
+```bash
+sudo zypper addrepo https://download.opensuse.org/repositories/home:Pihaar:linux-entra-bridge/openSUSE_Tumbleweed/home:Pihaar:linux-entra-bridge.repo
+sudo zypper refresh && sudo zypper install linux-entra-bridge
+```
+
+For Debian, Rocky/RHEL, Leap, and other distributions see the [main README](../README.md#pre-built-packages-opensuse-build-service).
 
 This installs:
 - Native messaging host at `/usr/libexec/linux-entra-bridge/linux_entra_bridge.py`
