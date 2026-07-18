@@ -111,3 +111,36 @@ Permission justification: `cookies` (set the SSO cookie on the Microsoft sign-in
 Source is public and unminified (vanilla JavaScript, no bundler): https://github.com/Pihaar/linux-entra-bridge
 
 **Data collection:** none. The manifest declares `data_collection_permissions.required = ["none"]`, so no consent flow is needed. (`web-ext lint` shows a `KEY_FIREFOX_UNSUPPORTED_BY_MIN_VERSION` warning for this field at TB 128; that is a Firefox-linter artifact and does not apply to ATN.)
+
+## Chrome Web Store (CWS)
+
+Third store, separate Google developer account (one-time $5 fee), own review.
+
+**Upload package:** `web-ext-artifacts/chrome-store/linux-entra-bridge-0.1.0-cws.zip` (the chromium build with the `key` field REMOVED, because the Web Store assigns the ID).
+
+**Extension ID handling (chosen strategy: store ID becomes the single canonical ID). Do in order:**
+1. Upload the .zip and create the store item. Google assigns a NEW extension ID (not `fldaig…`) and shows a "Public key" under the item's package details.
+2. Send me that new ID and the public key. Then I will: put the public key into `manifests/chromium.json` as `key` (so unpacked builds get the same ID as the store), migrate every `fldaignoojobnhfafojdhekiiboameoe` reference (NM-host `allowed_origins` in spec/debian.rules/PKGBUILD/install.sh, `chromium-policy.json`, README, README-enterprise) to the new ID, then commit/push and rebuild OBS.
+3. Until that migration is done, native messaging for the store build will NOT work (its ID is not yet in `allowed_origins`).
+
+**Name:** Linux Entra Bridge
+
+**Short description** (max 132 chars):
+Microsoft Entra ID SSO for Chrome on Linux. Bridges to microsoft-identity-broker; needs a companion native messaging host.
+
+**Detailed description:**
+On Linux, Microsoft Entra ID Conditional Access normally works only in Microsoft Edge, because only Edge talks to the Microsoft Identity Broker. Linux Entra Bridge gives Chrome (and Chromium, Brave, Vivaldi) the same capability.
+
+A native messaging host (open-source Python) requests the PRT single sign-on cookie from the local microsoft-identity-broker over D-Bus, and the extension sets it for the Microsoft sign-in domains. Chrome then presents as a compliant device to Entra ID, so Microsoft 365, the Azure Portal, and any SAML or OAuth application behind login.microsoftonline.com work without repeated sign-ins.
+
+It requires a Linux device enrolled in Microsoft Intune with microsoft-identity-broker running, plus the companion native messaging host from the project page. Everything runs locally; the extension makes no network requests of its own and sends no data to the developer or any third party.
+
+**Category:** Privacy & Security if offered; otherwise Communication or Workflow & Planning (CWS presents the list in the form).
+
+**Screenshots:** at least one required (1280x800 or 640x400). Use the popup.
+
+**Privacy practices tab (CWS asks for these explicitly):**
+- Single purpose: provide Microsoft Entra ID single sign-on for Chrome on Linux by setting the PRT SSO cookie obtained from the local microsoft-identity-broker.
+- Permission justifications: `cookies` (set the SSO cookie on the Microsoft sign-in domains), `nativeMessaging` (talk to the local host), `storage` (remember the selected account, locally), `alarms` (refresh before expiry), `webNavigation` (Conditional Access nonce flows), host permissions for the Microsoft sign-in domains.
+- Data usage: does NOT collect or transmit user data. Privacy policy: https://github.com/Pihaar/linux-entra-bridge/blob/main/PRIVACY.md
+- Remote code: no.
