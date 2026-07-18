@@ -48,7 +48,7 @@ cat > %{buildroot}%{_sysconfdir}/chromium/native-messaging-hosts/linux_entra_bri
   "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",
   "path": "%{_libexecdir}/%{name}/linux_entra_bridge.py",
   "type": "stdio",
-  "allowed_origins": ["chrome-extension://fldaignoojobnhfafojdhekiiboameoe/"]
+  "allowed_origins": ["chrome-extension://dffhogipdmkddjnppibgmgpcobdnaffk/"]
 }
 EOF
 # Symlink for Google Chrome and Brave

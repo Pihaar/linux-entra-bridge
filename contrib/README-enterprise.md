@@ -57,7 +57,7 @@ sudo mkdir -p /etc/brave/policies/managed
 sudo cp contrib/chromium-policy.json /etc/brave/policies/managed/linux-entra-bridge.json
 ```
 
-This adds the extension ID (`fldaignoojobnhfafojdhekiiboameoe`) to the allowlist and pins it to the toolbar.
+This adds the extension ID (`dffhogipdmkddjnppibgmgpcobdnaffk`) to the allowlist and pins it to the toolbar.
 
 #### 2. Load the Extension
 
@@ -73,7 +73,7 @@ Users load the extension from the RPM-installed path:
 The Chromium extension ID is deterministically derived from the public key in the manifest:
 
 ```
-fldaignoojobnhfafojdhekiiboameoe
+dffhogipdmkddjnppibgmgpcobdnaffk
 ```
 
 **Key details:**
@@ -108,13 +108,13 @@ Admins can pre-configure which Microsoft SPA domains get Background SSO via mana
 
 **Chromium (via policy JSON):**
 
-Deploy the `3rdparty.extensions.fldaignoojobnhfafojdhekiiboameoe` section in your managed policy:
+Deploy the `3rdparty.extensions.dffhogipdmkddjnppibgmgpcobdnaffk` section in your managed policy:
 
 ```json
 {
   "3rdparty": {
     "extensions": {
-      "fldaignoojobnhfafojdhekiiboameoe": {
+      "dffhogipdmkddjnppibgmgpcobdnaffk": {
         "spaAllowedDomains": [
           "teams.microsoft.com",
           "outlook.office.com",

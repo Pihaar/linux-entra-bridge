@@ -97,7 +97,7 @@ for chromium_dir in \
   "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",
   "path": "$HOST_SCRIPT",
   "type": "stdio",
-  "allowed_origins": ["chrome-extension://fldaignoojobnhfafojdhekiiboameoe/"]
+  "allowed_origins": ["chrome-extension://dffhogipdmkddjnppibgmgpcobdnaffk/"]
 }
 CHROMEOF
         echo "  Installed: $chromium_dir/linux_entra_bridge.json ($browser_name)"

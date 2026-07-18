@@ -20,7 +20,7 @@ override_dh_auto_install:
 	install -d $(DESTDIR)/usr/lib/librewolf/native-messaging-hosts
 	ln -sf /usr/lib/mozilla/native-messaging-hosts/linux_entra_bridge.json $(DESTDIR)/usr/lib/librewolf/native-messaging-hosts/linux_entra_bridge.json
 	install -d $(DESTDIR)/etc/chromium/native-messaging-hosts
-	printf '{\n  "name": "linux_entra_bridge",\n  "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",\n  "path": "/usr/lib/$(PKG)/linux_entra_bridge.py",\n  "type": "stdio",\n  "allowed_origins": ["chrome-extension://fldaignoojobnhfafojdhekiiboameoe/"]\n}\n' > $(DESTDIR)/etc/chromium/native-messaging-hosts/linux_entra_bridge.json
+	printf '{\n  "name": "linux_entra_bridge",\n  "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",\n  "path": "/usr/lib/$(PKG)/linux_entra_bridge.py",\n  "type": "stdio",\n  "allowed_origins": ["chrome-extension://dffhogipdmkddjnppibgmgpcobdnaffk/"]\n}\n' > $(DESTDIR)/etc/chromium/native-messaging-hosts/linux_entra_bridge.json
 	install -d $(DESTDIR)/etc/opt/chrome/native-messaging-hosts
 	ln -sf /etc/chromium/native-messaging-hosts/linux_entra_bridge.json $(DESTDIR)/etc/opt/chrome/native-messaging-hosts/linux_entra_bridge.json
 	install -d $(DESTDIR)/etc/brave-browser/native-messaging-hosts

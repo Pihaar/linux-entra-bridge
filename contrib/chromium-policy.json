@@ -1,16 +1,16 @@
 {
   "ExtensionInstallAllowlist": [
-    "fldaignoojobnhfafojdhekiiboameoe"
+    "dffhogipdmkddjnppibgmgpcobdnaffk"
   ],
   "ExtensionSettings": {
-    "fldaignoojobnhfafojdhekiiboameoe": {
+    "dffhogipdmkddjnppibgmgpcobdnaffk": {
       "installation_mode": "allowed",
       "toolbar_pin": "force_pinned"
     }
   },
   "3rdparty": {
     "extensions": {
-      "fldaignoojobnhfafojdhekiiboameoe": {
+      "dffhogipdmkddjnppibgmgpcobdnaffk": {
         "spaAllowedDomains": [
           "teams.microsoft.com",
           "outlook.office.com",

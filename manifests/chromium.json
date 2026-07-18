@@ -3,7 +3,7 @@
   "name": "Linux Entra Bridge",
   "version": "0.1.0",
   "description": "Enables Microsoft Entra ID SSO on Linux via the microsoft-identity-broker D-Bus service",
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt93mgkfVItrcqac4uqP2r5CHi5ZLJ5gD2okwrX8IwHlKKlIp3E6o7f7LmUuf3WNJTx3B7CCrEcwNYwWD4phmIffA9LyJrz74bogEosgku0WjT88z6NkYNLk1UDv2fCAUrILs5+I7ASmXCso4n/eAOQ3ItquolZ3l7gT92J0xo0KPpFyxco5uQU+ja9xkpiigsLl6RAws+OhZC0STcq5LXA8VFP0SbYg0OK9tYzsGCz1jtt7t5EAUUV7GOrYATsoeWaFh1m1iISsp6EOOEp8Bs8OVoPgkU5bFbGXy7jgJYO/obrJMg/qjFHW5JqHWkYIWlGrtECRYnd3CIwpkYfWlrwIDAQAB",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3MtgkzC8DrUMW2yyVOSO2fpYjlRiQyYFF5f/Ypjz+w9tGlYsC6OTWbeCkbl1Ylg5QxwyKaQtdn2IKTHkFjUxqE8llqY9Vw4hOXb9jCsqc9R06fBfmGK5lD4lLgsESc2x9jM6RvFEwnZm/atUhMDOBfxmqB3duIyUm7xe6pZhLLD8iawgelNVMtre7eddXUd8O9OjnKRhhKr/wS6bnKg6WJ4zMQ4JjZsAw0mrA0DqbMivfVmaFv9i79WIG/aYZBdRhvrkKMUcPwwIfpY39PEwhfGKsuT0qFMro4a4lU6nL/xYs/pPzTbofg8JoeNvKgszRk+SZJ/D8WXbeRn+sFXwwwIDAQAB",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",

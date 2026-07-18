@@ -118,10 +118,8 @@ Third store, separate Google developer account (one-time $5 fee), own review.
 
 **Upload package:** `web-ext-artifacts/chrome-store/linux-entra-bridge-0.1.0-cws.zip` (the chromium build with the `key` field REMOVED, because the Web Store assigns the ID).
 
-**Extension ID handling (chosen strategy: store ID becomes the single canonical ID). Do in order:**
-1. Upload the .zip and create the store item. Google assigns a NEW extension ID (not `fldaig…`) and shows a "Public key" under the item's package details.
-2. Send me that new ID and the public key. Then I will: put the public key into `manifests/chromium.json` as `key` (so unpacked builds get the same ID as the store), migrate every `fldaignoojobnhfafojdhekiiboameoe` reference (NM-host `allowed_origins` in spec/debian.rules/PKGBUILD/install.sh, `chromium-policy.json`, README, README-enterprise) to the new ID, then commit/push and rebuild OBS.
-3. Until that migration is done, native messaging for the store build will NOT work (its ID is not yet in `allowed_origins`).
+**Extension ID (store ID is the single canonical ID):** `dffhogipdmkddjnppibgmgpcobdnaffk`
+The Web Store assigned this ID on upload. Its public key is stored as the `key` field in `manifests/chromium.json`, so unpacked and OBS-packaged builds derive the same ID as the store build. Every native-messaging `allowed_origins` entry (spec, debian.rules, PKGBUILD, install.sh), `chromium-policy.json`, and the READMEs reference this ID. The uploaded `.zip` itself has NO `key` field, because the store assigns the ID for the store build.
 
 **Name:** Linux Entra Bridge
 
@@ -139,8 +137,32 @@ It requires a Linux device enrolled in Microsoft Intune with microsoft-identity-
 
 **Screenshots:** at least one required (1280x800 or 640x400). Use the popup.
 
-**Privacy practices tab (CWS asks for these explicitly):**
-- Single purpose: provide Microsoft Entra ID single sign-on for Chrome on Linux by setting the PRT SSO cookie obtained from the local microsoft-identity-broker.
-- Permission justifications: `cookies` (set the SSO cookie on the Microsoft sign-in domains), `nativeMessaging` (talk to the local host), `storage` (remember the selected account, locally), `alarms` (refresh before expiry), `webNavigation` (Conditional Access nonce flows), host permissions for the Microsoft sign-in domains.
-- Data usage: does NOT collect or transmit user data. Privacy policy: https://github.com/Pihaar/linux-entra-bridge/blob/main/PRIVACY.md
-- Remote code: no.
+**Privacy practices tab (CWS asks for each of these in its own field):**
+
+Single purpose:
+> This extension has a single purpose: to provide Microsoft Entra ID single sign-on for Chrome on Linux. It obtains the PRT SSO cookie from the local microsoft-identity-broker (through a companion native messaging host that talks to the broker over D-Bus) and sets it for the Microsoft sign-in domains, so the browser can pass Conditional Access checks that otherwise require Microsoft Edge.
+
+`alarms`:
+> Schedules a background refresh of the PRT SSO cookie shortly before it expires, so the sign-in session stays valid without user interaction.
+
+`cookies`:
+> Sets the PRT single sign-on cookie on the Microsoft sign-in domains (login.microsoftonline.com, login.microsoft.com, login.live.com) and removes it when the user switches accounts. This cookie is what lets the browser authenticate as a compliant device.
+
+`nativeMessaging`:
+> Communicates with the companion native messaging host (open-source Python), the only component that talks to the local microsoft-identity-broker over D-Bus to obtain the SSO cookie. The browser cannot reach the broker directly.
+
+`storage`:
+> Remembers the user's selected account (username only) and local settings such as the debug toggle, using chrome.storage. Nothing is transmitted anywhere.
+
+`webNavigation`:
+> Detects the sso_nonce parameter on navigations to login.microsoftonline.com, so the extension can request a nonce-bound SSO cookie for Conditional Access flows that require it.
+
+Host permissions:
+> Host access to the Microsoft sign-in domains (login.microsoftonline.com, login.microsoft.com, login.live.com) is required to set the SSO cookie on exactly those domains. Optional host permissions (for example graph.microsoft.com for the opt-in device-compliance display) are requested only on demand when the user enables that feature.
+
+Remote code: select "No, I am not using remote code." If a justification field is still shown:
+> All code is contained in the extension package. Vanilla JavaScript, no bundler, no external scripts, no eval of remote content, no CDN references. Nothing is loaded or executed from a remote source at runtime.
+
+Data usage: declare NO data categories as collected, then tick the three certification checkboxes (data is not sold, not used for unrelated purposes, not used for creditworthiness). Privacy policy: https://github.com/Pihaar/linux-entra-bridge/blob/main/PRIVACY.md
+
+Publisher contact email (account-level, one-time): set and verify a contact email in the developer settings before publishing. Use a private or GitHub noreply address, not a corporate one. This applies to all your extensions, not just this one.

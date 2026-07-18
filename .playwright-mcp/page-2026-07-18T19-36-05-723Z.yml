@@ -1,0 +1,22 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]: Linux Entra Bridge
+    - generic [ref=e4]: v0.1.0
+  - generic [ref=e7]: Connected to Identity Broker
+  - button "Refresh Cookie" [ref=e8] [cursor=pointer]
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e11]: "Broker:"
+      - generic [ref=e12]: v3.0.2
+    - generic [ref=e13]:
+      - generic [ref=e14]: "Cookie:"
+      - generic [ref=e15]: cached (59m 00s remaining)
+    - generic [ref=e16]:
+      - generic [ref=e17]: "Accounts (click to select):"
+      - button "Anna Beispiel ✓ anna.beispiel@contoso.com" [ref=e18] [cursor=pointer]:
+        - generic [ref=e19]: Anna Beispiel ✓
+        - generic [ref=e20]: anna.beispiel@contoso.com
+    - button "Use auto-select" [ref=e21] [cursor=pointer]
+  - generic [ref=e22]:
+    - text: ● linux-laptop (compliant) — checked 0 min ago
+    - generic [ref=e23]: Informational only — authoritative state is determined by Intune

@@ -139,7 +139,7 @@ Then load the unpacked extension:
 2. Enable **Developer mode** (toggle top-right)
 3. Click **Load unpacked** --> select `web-ext-artifacts/chromium/`
 
-The extension gets a stable ID (`fldaignoojobnhfafojdhekiiboameoe`) via the `key` field in the manifest, so the native messaging host always connects.
+The extension gets a stable ID (`dffhogipdmkddjnppibgmgpcobdnaffk`) via the `key` field in the manifest, so the native messaging host always connects.
 
 > **Note:** Chromium shows a "Developer mode extensions" banner on startup. This is cosmetic.
 

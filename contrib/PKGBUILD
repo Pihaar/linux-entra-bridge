@@ -41,7 +41,7 @@ JSON
   "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",
   "path": "/usr/lib/$pkgname/linux_entra_bridge.py",
   "type": "stdio",
-  "allowed_origins": ["chrome-extension://fldaignoojobnhfafojdhekiiboameoe/"]
+  "allowed_origins": ["chrome-extension://dffhogipdmkddjnppibgmgpcobdnaffk/"]
 }
 JSON
   for d in etc/opt/chrome etc/brave-browser etc/vivaldi; do
