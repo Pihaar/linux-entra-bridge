@@ -87,8 +87,8 @@ self-contained; nothing needs to be copied from the Firefox section.
 
 **Name:** Linux Entra Bridge
 
-**Summary:**
-Microsoft Entra ID single sign-on for Thunderbird on Linux. It bridges to the local microsoft-identity-broker so Thunderbird can reuse the device's SSO session for Microsoft 365 and Exchange accounts.
+**Summary** (max 250 chars):
+Entra ID SSO for Thunderbird on Linux. A native messaging host bridges to the local microsoft-identity-broker, reusing the device SSO session for Microsoft 365 / Exchange (Conditional Access outside Edge). Companion host required.
 
 **Description** (ATN takes the short description from the manifest; paste this if a full-description field is shown):
 On Linux, signing in to Microsoft 365 or Exchange accounts in Thunderbird goes through Microsoft Entra ID, where Conditional Access normally works only in Microsoft Edge. Linux Entra Bridge closes that gap.
