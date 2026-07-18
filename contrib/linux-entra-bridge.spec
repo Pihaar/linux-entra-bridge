@@ -68,15 +68,10 @@ ln -sf %{_prefix}/lib/mozilla/native-messaging-hosts/linux_entra_bridge.json \
        %{buildroot}%{_prefix}/lib/librewolf/native-messaging-hosts/linux_entra_bridge.json
 
 # Extension source (Chromium unpacked load — Firefox users should use the signed .xpi from Releases)
-# manifest.json is placed by the Makefile rpm target before tar; verify it exists
+# The Chromium manifest is the canonical manifest for the unpacked/system extension install
 install -d %{buildroot}%{_datadir}/%{name}/extension
 cp extension/*.js extension/*.html extension/*.css %{buildroot}%{_datadir}/%{name}/extension/
-if [ -f extension/manifest.json ]; then
-    cp extension/manifest.json %{buildroot}%{_datadir}/%{name}/extension/
-else
-    echo "ERROR: manifest.json not found in extension/ — run 'make rpm' which sets it up" >&2
-    exit 1
-fi
+cp manifests/chromium.json %{buildroot}%{_datadir}/%{name}/extension/manifest.json
 cp -r extension/icons %{buildroot}%{_datadir}/%{name}/extension/
 
 %check
