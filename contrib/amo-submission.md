@@ -107,12 +107,23 @@ self-contained; nothing needs to be copied from the Firefox section.
 **Summary** (max 250 chars):
 Entra ID SSO for Thunderbird on Linux. A native messaging host bridges to the local microsoft-identity-broker, reusing the device SSO session for Microsoft 365 / Exchange (Conditional Access outside Edge). Companion host required.
 
-**Description** (ATN takes the short description from the manifest; paste this if a full-description field is shown):
-On Linux, signing in to Microsoft 365 or Exchange accounts in Thunderbird goes through Microsoft Entra ID, where Conditional Access normally works only in Microsoft Edge. Linux Entra Bridge closes that gap.
+**Description** (ATN has a full HTML description field. Allowed tags: `<a> <b> <strong> <i> <em> <code> <ul> <ol> <li> <blockquote>`; NO `<p>` — use blank lines for paragraphs; Markdown is NOT interpreted). Paste:
 
-A native messaging host (open-source Python) requests the PRT single sign-on cookie from the local microsoft-identity-broker over D-Bus, and the extension sets it for the Microsoft sign-in domains. Thunderbird's account sign-in window then reuses the device's existing SSO session, without repeated logins.
+```html
+On Linux, signing in to Microsoft 365 or Exchange accounts in Thunderbird goes through Microsoft Entra ID, where Conditional Access (Intune device compliance) normally works only in Microsoft Edge, because only Edge talks to the Microsoft Identity Broker. <b>Linux Entra Bridge</b> closes that gap for Thunderbird.
 
-It requires a Linux device enrolled in Microsoft Intune with microsoft-identity-broker running, plus the native messaging host from the project page. Everything runs locally; the extension makes no network requests of its own and sends no data to the developer or any third party.
+A companion native messaging host (open-source Python) requests the PRT single sign-on cookie from the local <code>microsoft-identity-broker</code> service over D-Bus, and the extension sets it for the Microsoft sign-in domains. Thunderbird's built-in OAuth sign-in window for Microsoft 365 and Exchange accounts then reuses your device's existing SSO session, without repeated logins, and presents the device as compliant to Entra ID.
+
+<b>Requirements:</b>
+<ul>
+<li>A Linux device enrolled in Microsoft Intune, with microsoft-identity-broker running (Edge SSO must already work).</li>
+<li>The companion native messaging host, installed system-wide via the package or the project's install script.</li>
+</ul>
+
+<b>Privacy:</b> Everything runs locally. The extension and host make no network requests of their own and send no data to the developer or any third party. The SSO token is kept in memory and never written to disk.
+
+Open source (MIT), including the native host and the reverse-engineered broker protocol notes: <a href="https://github.com/Pihaar/linux-entra-bridge">github.com/Pihaar/linux-entra-bridge</a>
+```
 
 **Categories:** Privacy & Security
 
