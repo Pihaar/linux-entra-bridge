@@ -107,7 +107,7 @@ self-contained; nothing needs to be copied from the Firefox section.
 **Summary** (max 250 chars):
 Entra ID SSO for Thunderbird on Linux. A native messaging host bridges to the local microsoft-identity-broker, reusing the device SSO session for Microsoft 365 / Exchange (Conditional Access outside Edge). Companion host required.
 
-**Description** (ATN has a full HTML description field. Allowed tags: `<a> <b> <strong> <i> <em> <code> <ul> <ol> <li> <blockquote>`; NO `<p>` — use blank lines for paragraphs; Markdown is NOT interpreted). Paste:
+**Description** (ATN has a full HTML description field. Allowed tags: `<a href title> <abbr title> <acronym title> <b> <blockquote> <code> <em> <i> <li> <ol> <strong> <ul>`; NO `<p>` — use blank lines for paragraphs; Markdown is NOT interpreted). Paste:
 
 ```html
 On Linux, signing in to Microsoft 365 or Exchange accounts in Thunderbird goes through Microsoft Entra ID, where Conditional Access (Intune device compliance) normally works only in Microsoft Edge, because only Edge talks to the Microsoft Identity Broker. <b>Linux Entra Bridge</b> closes that gap for Thunderbird.
