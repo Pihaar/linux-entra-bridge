@@ -73,6 +73,23 @@ Source code is public and unminified (vanilla JavaScript, no bundler):
 https://github.com/Pihaar/linux-entra-bridge. See SECURITY.md for the security
 model and the reverse-engineered broker protocol notes.
 
+### Source code / build instructions (Firefox reviewer)
+
+No minified, bundled, obfuscated, or transpiled code — vanilla JS, ES modules, no build framework. At AMO's "Do you use tools to minify/concatenate/generate code?" question you can answer NO; then no source upload is required. If build instructions are requested, paste:
+> This add-on contains no minified, bundled, obfuscated, or transpiled code. All JavaScript, HTML, and CSS are the original human-readable sources (vanilla JS, ES modules). `web-ext build` only zips the files; no compilation or code generation.
+>
+> Environment: any OS with Node.js and npm (developed on Linux).
+>
+> Build (reproduces the exact package):
+>     git clone https://github.com/Pihaar/linux-entra-bridge
+>     cd linux-entra-bridge && git checkout v0.1.1
+>     npm ci                # installs web-ext 10.4.0, pinned via package-lock.json
+>     make build-firefox    # copies manifests/firefox.json to extension/manifest.json, then runs 'web-ext build'
+>
+> Result: web-ext-artifacts/firefox/linux_entra_bridge-0.1.1.zip — contents are exactly the files under extension/ plus manifests/firefox.json renamed to manifest.json, byte-for-byte the same as the repo. No minification.
+>
+> Source for this exact version: https://github.com/Pihaar/linux-entra-bridge/tree/v0.1.1
+
 ## Thunderbird (addons.thunderbird.net / ATN)
 
 ATN is a separate store from AMO: own account, own review, web-UI only (no `web-ext sign` CLI).
