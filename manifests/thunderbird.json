@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Linux Entra Bridge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Enables Microsoft Entra ID SSO on Linux via the microsoft-identity-broker D-Bus service",
   "browser_specific_settings": {
     "gecko": {

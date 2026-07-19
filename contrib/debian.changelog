@@ -1,3 +1,11 @@
+linux-entra-bridge (0.1.1) unstable; urgency=low
+
+  * Fix Firefox/Thunderbird native messaging path on lib64 distros (RPM arch-specific).
+  * Lower Firefox strict_min_version to 140 for ESR / Enterprise Linux.
+  * Adopt Chrome Web Store extension ID.
+
+ -- Patrick Haar <Pihaar@users.noreply.github.com>  Sun, 19 Jul 2026 12:00:00 +0200
+
 linux-entra-bridge (0.1.0) unstable; urgency=low
 
   * Initial release. See https://github.com/Pihaar/linux-entra-bridge for details.

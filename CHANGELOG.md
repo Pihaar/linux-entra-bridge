@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2026-07-19
+
+### Fixed
+- Native messaging manifest for Firefox and Thunderbird now installs to the lib64 mozilla path (`/usr/lib64/mozilla`) on RHEL, Fedora, and openSUSE; the RPM is now arch-specific. Previously it was placed in `/usr/lib/mozilla`, where those browsers do not search on lib64 distros, so SSO failed silently.
+- Lowered Firefox `strict_min_version` to `140.0` so the extension installs on Firefox ESR 140 (RHEL/SLE/openSUSE). `142` excluded the main Enterprise Linux target group; the add-on is desktop-only (no Android), so the Android-only data-collection requirement does not apply.
+- Disabled the RPM debug package (pure Python/JS/JSON payload, no binaries), fixing the Fedora/RHEL package build.
+
+### Changed
+- Adopted the Chrome Web Store extension ID as the canonical Chromium/Chrome ID.
+
 ## [0.1.0] - 2026-07-18
 
 Initial release.

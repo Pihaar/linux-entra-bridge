@@ -1,5 +1,5 @@
 Name:           linux-entra-bridge
-Version:        0.1.0
+Version:        0.1.1
 Release:        1%{?dist}
 Summary:        Microsoft Entra ID SSO for Linux browsers via Identity Broker D-Bus
 License:        MIT
@@ -112,5 +112,9 @@ python3 -c "import py_compile; py_compile.compile('native-host/linux_entra_bridg
 %{_datadir}/%{name}/
 
 %changelog
+* Sun Jul 19 2026 Patrick Haar <Pihaar@users.noreply.github.com> - 0.1.1-1
+- Fix Firefox/Thunderbird native messaging path on lib64 distros (arch-specific, lib64 mozilla dir)
+- Lower Firefox strict_min_version to 140 for ESR / Enterprise Linux
+- Adopt Chrome Web Store extension ID as the canonical Chromium ID
 * Sat Jul 18 2026 Patrick Haar <Pihaar@users.noreply.github.com> - 0.1.0-1
 - Initial release
