@@ -70,14 +70,26 @@ sudo cp contrib/chromium-policy.json /etc/brave/policies/managed/linux-entra-bri
 
 This adds the extension ID (`dffhogipdmkddjnppibgmgpcobdnaffk`) to the allowlist and pins it to the toolbar.
 
-#### 2. Load the Extension
+#### 2. Install the Extension
 
-Users load the extension from the RPM-installed path:
+Now that the extension is published on the Chrome Web Store, the cleanest managed deployment is **force-install** via policy: it auto-installs for all users and keeps the extension updated. Add to the managed policy:
+
+```json
+{
+  "ExtensionInstallForcelist": [
+    "dffhogipdmkddjnppibgmgpcobdnaffk;https://clients2.google.com/service/update2/crx"
+  ]
+}
+```
+
+Chrome, Chromium, Brave, and Vivaldi all honor this.
+
+Alternatively, for offline or store-restricted environments, load the RPM-installed unpacked build:
 1. Open `chrome://extensions` (or `brave://extensions`)
 2. Enable **Developer mode**
 3. Click **Load unpacked** → select `/usr/share/linux-entra-bridge/extension/`
 
-> **Note:** Chromium's `force_installed` mode requires a Chrome Web Store update URL, which is not available for self-hosted extensions. The `allowed` + `ExtensionInstallAllowlist` approach is the practical path for RPM-distributed extensions.
+Both paths use the same extension ID (`dffhogipdmkddjnppibgmgpcobdnaffk`), so the native messaging host connects either way. In every case the host itself must be installed (via the RPM or `native-host/install.sh`).
 
 ## Stable Extension ID & Key Management
 

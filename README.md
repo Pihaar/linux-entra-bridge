@@ -113,6 +113,15 @@ This auto-detects installed browsers and installs the native messaging manifest 
 
 ### 2. Install the extension
 
+Published in the browser stores (easiest for end users):
+- **Firefox / LibreWolf:** [Mozilla Add-ons](https://addons.mozilla.org/en-US/firefox/addon/linux-entra-bridge/) (available once the AMO review completes)
+- **Chrome / Chromium / Brave / Vivaldi:** [Chrome Web Store](https://chromewebstore.google.com/detail/linux-entra-bridge/dffhogipdmkddjnppibgmgpcobdnaffk)
+- **Thunderbird:** [addons.thunderbird.net](https://addons.thunderbird.net/en-US/thunderbird/addon/linux-entra-bridge/)
+
+> The store extension still needs the native messaging host from step 1 (or the RPM package) to reach the broker. Installing only the extension is not enough.
+
+Manual / offline alternatives:
+
 #### Firefox / LibreWolf
 
 Build and sign the `.xpi` yourself (no CI/CD -- signing requires AMO API credentials):
