@@ -21,24 +21,23 @@ otherwise require Microsoft Edge.
 
 ### Full description
 
-On Linux, Microsoft Entra ID Conditional Access normally works only in Microsoft
-Edge, because only Edge talks to the Microsoft Identity Broker. Linux Entra Bridge
-gives Firefox the same capability.
+AMO renders the same limited HTML allowlist as ATN: `<a href title> <abbr title> <acronym title> <b> <blockquote> <code> <em> <i> <li> <ol> <strong> <ul>`; NO `<p>` — use blank lines for paragraphs; Markdown is NOT interpreted. Paste:
 
-A small native messaging host (open-source Python) requests the PRT single sign-on
-cookie from the local microsoft-identity-broker over D-Bus, and the extension places
-it in the browser cookie store for the Microsoft sign-in domains. Firefox then
-presents as a compliant device to Entra ID, so Microsoft 365, the Azure Portal, and
-SAML or OAuth applications behind login.microsoftonline.com work without repeated
-sign-ins.
+```html
+On Linux, Microsoft Entra ID Conditional Access normally works only in Microsoft Edge, because only Edge talks to the Microsoft Identity Broker. <b>Linux Entra Bridge</b> gives Firefox the same capability.
 
-Requirements:
-- A Linux device enrolled in Microsoft Intune, with microsoft-identity-broker running
-- The native messaging host from the project page
+A small native messaging host (open-source Python) requests the PRT single sign-on cookie from the local <code>microsoft-identity-broker</code> over D-Bus, and the extension places it in the browser cookie store for the Microsoft sign-in domains. Firefox then presents as a compliant device to Entra ID, so Microsoft 365, the Azure Portal, and SAML or OAuth applications behind login.microsoftonline.com work without repeated sign-ins.
 
-Everything runs locally. The extension makes no network requests of its own and
-sends no data to the developer or any third party. Source and documentation:
-https://github.com/Pihaar/linux-entra-bridge
+<b>Requirements:</b>
+<ul>
+<li>A Linux device enrolled in Microsoft Intune, with microsoft-identity-broker running (Edge SSO must already work).</li>
+<li>The companion native messaging host, installed system-wide via the package or the project's install script.</li>
+</ul>
+
+<b>Privacy:</b> Everything runs locally. The extension and host make no network requests of their own and send no data to the developer or any third party. The SSO token is kept in memory and never written to disk.
+
+Open source (MIT), including the native host and the reverse-engineered broker protocol notes: <a href="https://github.com/Pihaar/linux-entra-bridge">github.com/Pihaar/linux-entra-bridge</a>
+```
 
 ## Reviewer notes (paste into the submission)
 
