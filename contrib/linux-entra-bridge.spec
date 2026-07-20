@@ -38,9 +38,13 @@ install -Dm755 native-host/linux_entra_bridge.py %{buildroot}%{_libexecdir}/%{na
 # Use an absolute interpreter path (SUSE rpmlint rejects /usr/bin/env for dependency detection)
 sed -i '1s|#!/usr/bin/env python3|#!/usr/bin/python3|' %{buildroot}%{_libexecdir}/%{name}/linux_entra_bridge.py
 
-# Firefox/LibreWolf native messaging host manifest
-install -d %{buildroot}%{_libdir}/mozilla/native-messaging-hosts
-cat > %{buildroot}%{_libdir}/mozilla/native-messaging-hosts/linux_entra_bridge.json << EOF
+# Firefox/Thunderbird/LibreWolf native messaging host manifest.
+# Browsers disagree on the system dir: Red Hat Firefox/Thunderbird (built with
+# HAVE_USR_LIB64_DIR) look in %{_libdir}/mozilla (/usr/lib64), while LibreWolf and
+# generic/Debian builds look in /usr/lib/mozilla. Install into /usr/lib/mozilla
+# always, and additionally into %{_libdir}/mozilla on 64-bit (where they differ).
+install -d %{buildroot}%{_prefix}/lib/mozilla/native-messaging-hosts
+cat > %{buildroot}%{_prefix}/lib/mozilla/native-messaging-hosts/linux_entra_bridge.json << EOF
 {
   "name": "linux_entra_bridge",
   "description": "Microsoft Entra ID SSO via Identity Broker D-Bus",
@@ -49,6 +53,11 @@ cat > %{buildroot}%{_libdir}/mozilla/native-messaging-hosts/linux_entra_bridge.j
   "allowed_extensions": ["entra-bridge@linux-entra-bridge", "entra-bridge@linux-entra-bridge.tb"]
 }
 EOF
+%if "%{_lib}" != "lib"
+install -d %{buildroot}%{_libdir}/mozilla/native-messaging-hosts
+cp -a %{buildroot}%{_prefix}/lib/mozilla/native-messaging-hosts/linux_entra_bridge.json \
+      %{buildroot}%{_libdir}/mozilla/native-messaging-hosts/linux_entra_bridge.json
+%endif
 
 # Chromium native messaging host manifest
 install -d %{buildroot}%{_sysconfdir}/chromium/native-messaging-hosts
@@ -72,10 +81,10 @@ install -d %{buildroot}%{_sysconfdir}/vivaldi/native-messaging-hosts
 ln -sf %{_sysconfdir}/chromium/native-messaging-hosts/linux_entra_bridge.json \
        %{buildroot}%{_sysconfdir}/vivaldi/native-messaging-hosts/linux_entra_bridge.json
 
-# LibreWolf system-wide native messaging host (symlink to Firefox manifest)
-install -d %{buildroot}%{_libdir}/librewolf/native-messaging-hosts
-ln -sf %{_libdir}/mozilla/native-messaging-hosts/linux_entra_bridge.json \
-       %{buildroot}%{_libdir}/librewolf/native-messaging-hosts/linux_entra_bridge.json
+# LibreWolf looks in /usr/lib/librewolf (and /usr/lib/mozilla, covered above).
+install -d %{buildroot}%{_prefix}/lib/librewolf/native-messaging-hosts
+ln -sf %{_prefix}/lib/mozilla/native-messaging-hosts/linux_entra_bridge.json \
+       %{buildroot}%{_prefix}/lib/librewolf/native-messaging-hosts/linux_entra_bridge.json
 
 # Extension source (Chromium unpacked load — Firefox users should use the signed .xpi from Releases)
 # The Chromium manifest is the canonical manifest for the unpacked/system extension install
@@ -91,12 +100,17 @@ python3 -c "import py_compile; py_compile.compile('native-host/linux_entra_bridg
 %license LICENSE
 %doc README.md
 %{_libexecdir}/%{name}/
+%dir %{_prefix}/lib/mozilla
+%dir %{_prefix}/lib/mozilla/native-messaging-hosts
+%{_prefix}/lib/mozilla/native-messaging-hosts/linux_entra_bridge.json
+%dir %{_prefix}/lib/librewolf
+%dir %{_prefix}/lib/librewolf/native-messaging-hosts
+%{_prefix}/lib/librewolf/native-messaging-hosts/linux_entra_bridge.json
+%if "%{_lib}" != "lib"
 %dir %{_libdir}/mozilla
 %dir %{_libdir}/mozilla/native-messaging-hosts
 %{_libdir}/mozilla/native-messaging-hosts/linux_entra_bridge.json
-%dir %{_libdir}/librewolf
-%dir %{_libdir}/librewolf/native-messaging-hosts
-%{_libdir}/librewolf/native-messaging-hosts/linux_entra_bridge.json
+%endif
 %dir %{_sysconfdir}/chromium
 %dir %{_sysconfdir}/chromium/native-messaging-hosts
 %{_sysconfdir}/chromium/native-messaging-hosts/linux_entra_bridge.json
