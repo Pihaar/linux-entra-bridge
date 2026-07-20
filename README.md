@@ -93,6 +93,7 @@ sudo dnf install linux-entra-bridge
 **Debian 13**
 ```sh
 echo 'deb [signed-by=/etc/apt/keyrings/home_Pihaar_linux-entra-bridge.gpg] https://download.opensuse.org/repositories/home:/Pihaar:/linux-entra-bridge/Debian_13/ /' | sudo tee /etc/apt/sources.list.d/home_Pihaar_linux-entra-bridge.list
+sudo mkdir -p /etc/apt/keyrings
 curl -fsSL https://download.opensuse.org/repositories/home:/Pihaar:/linux-entra-bridge/Debian_13/Release.key | gpg --dearmor | sudo tee /etc/apt/keyrings/home_Pihaar_linux-entra-bridge.gpg > /dev/null
 sudo apt update && sudo apt install linux-entra-bridge
 ```
