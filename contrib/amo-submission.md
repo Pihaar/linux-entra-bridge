@@ -92,7 +92,7 @@ No minified, bundled, obfuscated, or transpiled code — vanilla JS, ES modules,
 ## Thunderbird (addons.thunderbird.net / ATN)
 
 ATN is a separate store from AMO: own account, own review, web-UI only (no `web-ext sign` CLI).
-Upload the file `web-ext-artifacts/entra-id-sso-thunderbird-0.1.0.xpi`. Every field below is
+Upload the file `web-ext-artifacts/entra-id-sso-thunderbird-0.1.1.xpi`. Every field below is
 self-contained; nothing needs to be copied from the Firefox section.
 
 **Compatible applications:** Thunderbird only (not SeaMonkey).
@@ -128,12 +128,19 @@ Open source (MIT), including the native host and the reverse-engineered broker p
 
 **Support site / Homepage / Source code:** https://github.com/Pihaar/linux-entra-bridge
 
+**Release notes (per-version, plain text — ATN's version-notes field takes no HTML/Markdown):**
+Fixes adding Microsoft 365 and Exchange accounts through Thunderbird's built-in Outlook Web login. The Conditional Access error 530003 ("device is not registered") no longer occurs: Thunderbird opens that login in an isolated cookie container that the single sign-on cookie did not reach before, and the cookie is now provided there so Entra recognises the device.
+
+Adds an options page in Thunderbird (previously available only on Firefox and Chromium), including a working opt-in device compliance toggle.
+
+Fixes the companion native messaging host installation on RHEL, Fedora and openSUSE (lib64 path), where single sign-on could previously fail silently.
+
 **Notes to reviewer:**
 This extension enables Microsoft Entra ID SSO for Thunderbird on Linux. It cannot be fully exercised in a standard review environment because it requires (1) a Linux device enrolled in Microsoft Intune and (2) the microsoft-identity-broker system service running and reachable on the session D-Bus. Without that broker there is no token source.
 
-How it works: a native messaging host (open-source Python, in the project repo) calls the broker over D-Bus to obtain a PRT SSO cookie; the extension writes it to the cookie store for the Microsoft sign-in domains, so Thunderbird's built-in OAuth login window for Microsoft 365 and Exchange accounts reuses the device's SSO session. The extension and host make no outbound network requests and send no data to the developer or any third party; the token is kept in memory and never written to disk.
+How it works: a native messaging host (open-source Python, in the project repo) calls the broker over D-Bus to obtain a PRT SSO cookie; the extension sets it in the cookie store for the Microsoft sign-in domains, so Thunderbird's built-in login window for Microsoft 365 and Exchange accounts reuses the device's SSO session. Thunderbird opens that login inside an isolated contextual-identity cookie store; this version additionally mirrors the SSO cookie into that container store, which fixes Conditional Access error 530003 ("device Unregistered"). The extension and host make no outbound network requests and send no data to the developer or any third party; the cookie is only ever set on the three Microsoft sign-in domains, and storage.local holds only the selected account's username.
 
-Permission justification: `cookies` (set the SSO cookie on the Microsoft sign-in domains), `nativeMessaging` (talk to the local Python host), `storage` (remember the selected account username, stored locally), `alarms` (refresh the cookie before expiry), `webNavigation` (detect the sso_nonce parameter for Conditional Access nonce flows). host_permissions cover login.microsoftonline.com, login.microsoft.com and login.live.com.
+Permission justification: `cookies` (set the SSO cookie on the Microsoft sign-in domains, including Thunderbird's isolated OWA container store), `nativeMessaging` (talk to the local Python host), `storage` (remember the selected account username, stored locally), `alarms` (refresh the cookie before expiry), `webNavigation` (detect the sso_nonce parameter for Conditional Access nonce flows, and detect the OWA container navigation so the cookie is mirrored in time). host_permissions cover login.microsoftonline.com, login.microsoft.com and login.live.com. optional_host_permissions (graph.microsoft.com and other Microsoft origins) are not granted by default; they are requested at runtime only if the user enables the opt-in device-compliance display on the options page.
 
 Source is public and unminified (vanilla JavaScript, no bundler): https://github.com/Pihaar/linux-entra-bridge
 
