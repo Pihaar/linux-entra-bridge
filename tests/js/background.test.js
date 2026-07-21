@@ -10,6 +10,7 @@ let computeAndSetCookie, resetCookieAndRefresh;
 let scheduleRefresh, markBrokerUnhealthy, updateBadge, callBroker, loadDebugSetting;
 let saveHealthState, loadHealthState, validateAccount, sanitizeAccount, getSelectedAccount;
 let normalizeBrokerResponse, SSO_NONCE_HOSTS, SSO_NONCE_FILTER, DENY_KEYS;
+let isContainerStore, isOwaHost, CONTAINER_STORE_RE;
 
 // truncateMsg is imported from lib.js (not re-exported from background.js)
 let truncateMsg;
@@ -19,6 +20,7 @@ let onMessageListener;
 let onAlarmListener;
 let onChangedListener;
 let onBeforeNavigateListener;
+let onContainerNavigateListener;
 
 // Sender mock for onMessage calls — derived from mock runtime.id for consistency
 const SELF_SENDER = { id: browser.runtime.id };
@@ -38,13 +40,21 @@ beforeAll(async () => {
     scheduleRefresh, markBrokerUnhealthy, updateBadge, callBroker, loadDebugSetting,
     saveHealthState, loadHealthState, validateAccount, sanitizeAccount, getSelectedAccount,
     normalizeBrokerResponse, SSO_NONCE_HOSTS, SSO_NONCE_FILTER, DENY_KEYS,
+    isContainerStore, isOwaHost, CONTAINER_STORE_RE,
   } = mod);
 
-  // Capture the actual registered listeners BEFORE any clearAllMocks
+  // Capture the actual registered listeners BEFORE any clearAllMocks.
+  // Resolve the two onBeforeNavigate listeners by their filter content (NOT by index),
+  // so the tests don't depend on registration order:
+  //   nonce handler   -> registered with { url: SSO_NONCE_FILTER }
+  //   container handler-> registered with { url: [...{hostSuffix:".office.com"}...] }
   onMessageListener = browser.runtime.onMessage.addListener.mock.calls[0]?.[0];
   onAlarmListener = browser.alarms.onAlarm.addListener.mock.calls[0]?.[0];
   onChangedListener = browser.storage.onChanged.addListener.mock.calls[0]?.[0];
-  onBeforeNavigateListener = browser.webNavigation.onBeforeNavigate.addListener.mock.calls[0]?.[0];
+  const navCalls = browser.webNavigation.onBeforeNavigate.addListener.mock.calls;
+  onBeforeNavigateListener = navCalls.find((c) => c[1]?.url === SSO_NONCE_FILTER)?.[0];
+  onContainerNavigateListener = navCalls.find(
+    (c) => c[1]?.url?.some((f) => f.hostSuffix === ".office.com"))?.[0];
 });
 
 beforeEach(() => {
@@ -59,6 +69,8 @@ beforeEach(() => {
   _internal.lastNonceValue = null;
   _internal.lastNonceCallTime = 0;
   _internal.nonceCallTimestamps = [];
+  _internal.isThunderbird = true; // default TB for container tests; override to false for no-op cases
+  _internal.browserInfoReady = Promise.resolve();
   logBuffer.length = 0;
 
   // Reset all mocks
@@ -70,6 +82,8 @@ beforeEach(() => {
   browser.cookies.get.mockResolvedValue(null);
   browser.cookies.set.mockResolvedValue(undefined);
   browser.cookies.remove.mockResolvedValue(undefined);
+  browser.cookies.getAllCookieStores.mockResolvedValue([{ id: "firefox-default", tabIds: [] }]);
+  browser.runtime.getBrowserInfo.mockResolvedValue({ name: "Thunderbird", version: "128.0" });
   browser.runtime.sendNativeMessage.mockImplementation((_host, _msg, cb) => cb && cb({}));
 });
 
@@ -2235,5 +2249,385 @@ describe("alarm re-arm on startup (initialRefresh)", () => {
       scheduleRefresh(Math.round((_internal.cookieExpiry - now) / 1000));
     }
     expect(browser.alarms.create).not.toHaveBeenCalled();
+  });
+});
+
+// ===== Container cookie sync (Thunderbird OWA 530003 fix) =====
+
+const COOKIE_URLS = [
+  "https://login.microsoftonline.com",
+  "https://login.microsoft.com",
+  "https://login.live.com",
+];
+// JWT with {"exp":9999999999} so getCookieExpiry yields a far-future timestamp.
+const FUTURE_JWT = "h.eyJleHAiOjk5OTk5OTk5OTl9.s";
+
+describe("isContainerStore (allowlist, fail-closed)", () => {
+  test("accepts a firefox-container-N store", () => {
+    expect(isContainerStore({ id: "firefox-container-6", tabIds: [10] })).toBe(true);
+  });
+  test("rejects default store", () => {
+    expect(isContainerStore({ id: "firefox-default", tabIds: [] })).toBe(false);
+  });
+  test("rejects private store", () => {
+    expect(isContainerStore({ id: "firefox-private", tabIds: [] })).toBe(false);
+  });
+  test("rejects Chrome default and incognito ids", () => {
+    expect(isContainerStore({ id: "0" })).toBe(false);
+    expect(isContainerStore({ id: "1" })).toBe(false);
+  });
+  test("rejects a store flagged incognito even if the id matches", () => {
+    expect(isContainerStore({ id: "firefox-container-6", incognito: true })).toBe(false);
+  });
+  test("rejects unknown / future store ids", () => {
+    expect(isContainerStore({ id: "firefox-container-x" })).toBe(false);
+    expect(isContainerStore({ id: "some-other-store" })).toBe(false);
+    expect(isContainerStore(undefined)).toBe(false);
+    expect(isContainerStore(null)).toBe(false);
+  });
+  test("CONTAINER_STORE_RE matches exactly the container id shape", () => {
+    expect(CONTAINER_STORE_RE.test("firefox-container-0")).toBe(true);
+    expect(CONTAINER_STORE_RE.test("firefox-container-42")).toBe(true);
+    expect(CONTAINER_STORE_RE.test("firefox-container-")).toBe(false);
+    expect(CONTAINER_STORE_RE.test("xfirefox-container-6")).toBe(false);
+  });
+});
+
+describe("isOwaHost (label-boundary match)", () => {
+  test("accepts OWA subdomains and apex", () => {
+    expect(isOwaHost("outlook.office.com")).toBe(true);
+    expect(isOwaHost("office.com")).toBe(true);
+    expect(isOwaHost("outlook.office365.com")).toBe(true);
+    expect(isOwaHost("outlook.com")).toBe(true);
+    expect(isOwaHost("m365.cloud.microsoft")).toBe(true);
+  });
+  test("rejects look-alike domains (no label boundary)", () => {
+    expect(isOwaHost("evil-office.com")).toBe(false);
+    expect(isOwaHost("xoutlook.com")).toBe(false);
+    expect(isOwaHost("myoffice365.com")).toBe(false);
+  });
+  test("rejects suffix-injection lookalikes", () => {
+    expect(isOwaHost("outlook.com.attacker.example")).toBe(false);
+    expect(isOwaHost("office.com.evil.test")).toBe(false);
+  });
+  test("rejects unrelated hosts", () => {
+    expect(isOwaHost("example.com")).toBe(false);
+    expect(isOwaHost("login.microsoftonline.com")).toBe(false); // login.* handled by nonce path
+  });
+});
+
+describe("setCookieInStore storeId parameter", () => {
+  test("passes storeId to all three cookies.set calls when given", async () => {
+    await setCookieInStore("x-ms-RefreshTokenCredential", "val", Date.now() + 3600000, "firefox-container-6");
+    expect(browser.cookies.set).toHaveBeenCalledTimes(3);
+    for (const call of browser.cookies.set.mock.calls) {
+      expect(call[0].storeId).toBe("firefox-container-6");
+      expect(COOKIE_URLS).toContain(call[0].url);
+    }
+  });
+  test("omits storeId key entirely when not given (Chrome-safe)", async () => {
+    await setCookieInStore("x-ms-RefreshTokenCredential", "val", Date.now() + 3600000);
+    expect(browser.cookies.set).toHaveBeenCalledTimes(3);
+    for (const call of browser.cookies.set.mock.calls) {
+      expect(call[0]).not.toHaveProperty("storeId");
+    }
+  });
+});
+
+describe("container-sync navigation handler", () => {
+  function navContainer(url = "https://outlook.office.com/owa/", tabId = 10, frameId = 0) {
+    return onContainerNavigateListener({ url, tabId, frameId });
+  }
+  function warmCache() {
+    _internal.cachedCookie = { cookieName: "x-ms-RefreshTokenCredential", cookieContent: FUTURE_JWT };
+    _internal.cookieExpiry = Date.now() + 3600000; // future -> refreshCookie returns cache, no broker/default set
+  }
+  function stores(...extra) {
+    return [{ id: "firefox-default", tabIds: [1, 2] }, ...extra];
+  }
+
+  test("the container listener was registered with the OWA URL filter", () => {
+    expect(onContainerNavigateListener).toBeTypeOf("function");
+  });
+
+  test("mirrors the PRT into the container store on an OWA frameId-0 navigation", async () => {
+    warmCache();
+    browser.cookies.getAllCookieStores.mockResolvedValue(stores({ id: "firefox-container-6", tabIds: [10] }));
+    await navContainer();
+    const containerSets = browser.cookies.set.mock.calls.filter((c) => c[0].storeId === "firefox-container-6");
+    expect(containerSets).toHaveLength(3);
+    for (const call of containerSets) expect(COOKIE_URLS).toContain(call[0].url);
+  });
+
+  test("never uses details.url as the cookie url (injection regression)", async () => {
+    warmCache();
+    browser.cookies.getAllCookieStores.mockResolvedValue(stores({ id: "firefox-container-6", tabIds: [10] }));
+    await navContainer("https://outlook.office.com/owa/?evil=1");
+    for (const call of browser.cookies.set.mock.calls) {
+      expect(COOKIE_URLS).toContain(call[0].url);
+    }
+  });
+
+  test("no-op when not Thunderbird", async () => {
+    _internal.isThunderbird = false;
+    warmCache();
+    browser.cookies.getAllCookieStores.mockResolvedValue(stores({ id: "firefox-container-6", tabIds: [10] }));
+    await navContainer();
+    expect(browser.cookies.set).not.toHaveBeenCalled();
+    expect(browser.cookies.getAllCookieStores).not.toHaveBeenCalled();
+  });
+
+  test("no-op on a sub-frame navigation (frameId !== 0)", async () => {
+    warmCache();
+    browser.cookies.getAllCookieStores.mockResolvedValue(stores({ id: "firefox-container-6", tabIds: [10] }));
+    await navContainer("https://login.microsoftonline.com/authorize", 10, 38654705665);
+    expect(browser.cookies.set).not.toHaveBeenCalled();
+  });
+
+  test("no-op on a non-OWA host", async () => {
+    warmCache();
+    browser.cookies.getAllCookieStores.mockResolvedValue(stores({ id: "firefox-container-6", tabIds: [10] }));
+    await navContainer("https://evil-office.com/owa/");
+    expect(browser.cookies.set).not.toHaveBeenCalled();
+  });
+
+  test("no-op when the tab lives in the default store", async () => {
+    warmCache();
+    browser.cookies.getAllCookieStores.mockResolvedValue([{ id: "firefox-default", tabIds: [10] }]);
+    await navContainer();
+    expect(browser.cookies.set).not.toHaveBeenCalled();
+  });
+
+  test("no-op when the tab lives in a private store", async () => {
+    warmCache();
+    browser.cookies.getAllCookieStores.mockResolvedValue(stores({ id: "firefox-private", tabIds: [10] }));
+    await navContainer();
+    expect(browser.cookies.set).not.toHaveBeenCalled();
+  });
+
+  test("no-op when the tab is in no store / empty stores / missing tabIds", async () => {
+    warmCache();
+    browser.cookies.getAllCookieStores.mockResolvedValue([]);
+    await navContainer();
+    browser.cookies.getAllCookieStores.mockResolvedValue([{ id: "firefox-container-6" }]); // tabIds absent
+    await navContainer();
+    await navContainer("https://outlook.office.com/owa/", -1); // tabId -1
+    expect(browser.cookies.set).not.toHaveBeenCalled();
+  });
+
+  test("no set when refreshCookie yields no cookie", async () => {
+    _internal.cachedCookie = null;
+    _internal.cookieExpiry = 0;
+    _internal.brokerHealthy = false;
+    _internal.healthRetryAt = Date.now() + 60000; // broker on cooldown -> refreshCookie returns null
+    browser.cookies.getAllCookieStores.mockResolvedValue(stores({ id: "firefox-container-6", tabIds: [10] }));
+    await navContainer();
+    expect(browser.cookies.set).not.toHaveBeenCalled();
+  });
+
+  test("cold wake: empty cache triggers a broker call before mirroring", async () => {
+    _internal.cachedCookie = null;
+    _internal.cookieExpiry = 0;
+    browser.runtime.sendNativeMessage.mockImplementation((_h, _m, cb) =>
+      cb({ success: true, data: { cookieName: "x-ms-RefreshTokenCredential", cookieContent: FUTURE_JWT } }));
+    browser.cookies.getAllCookieStores.mockResolvedValue(stores({ id: "firefox-container-6", tabIds: [10] }));
+    await navContainer();
+    expect(browser.runtime.sendNativeMessage).toHaveBeenCalled();
+    const containerSets = browser.cookies.set.mock.calls.filter((c) => c[0].storeId === "firefox-container-6");
+    expect(containerSets).toHaveLength(3);
+  });
+
+  test("multi-store isolation: mirrors only into the tab's own container", async () => {
+    warmCache();
+    browser.cookies.getAllCookieStores.mockResolvedValue(stores(
+      { id: "firefox-container-6", tabIds: [10] },
+      { id: "firefox-container-7", tabIds: [11] },
+    ));
+    await navContainer("https://outlook.office.com/owa/", 11);
+    const c6 = browser.cookies.set.mock.calls.filter((c) => c[0].storeId === "firefox-container-6");
+    const c7 = browser.cookies.set.mock.calls.filter((c) => c[0].storeId === "firefox-container-7");
+    expect(c6).toHaveLength(0);
+    expect(c7).toHaveLength(3);
+  });
+
+  test("getAllCookieStores throwing is caught (warn, no crash)", async () => {
+    warmCache();
+    browser.cookies.getAllCookieStores.mockRejectedValue(new Error("boom"));
+    await expect(navContainer()).resolves.toBeUndefined();
+    expect(logBuffer.some((e) => e.source === "container" && e.level === "warn")).toBe(true);
+  });
+});
+
+describe("removeCookieFromStore over container stores", () => {
+  test("deletes from the default store first, then the container store", async () => {
+    browser.cookies.getAllCookieStores.mockResolvedValue([
+      { id: "firefox-default", tabIds: [] },
+      { id: "firefox-container-6", tabIds: [10] },
+    ]);
+    await removeCookieFromStore("x-ms-RefreshTokenCredential");
+    const defaultRemoves = browser.cookies.remove.mock.calls.filter((c) => !c[0].storeId);
+    const containerRemoves = browser.cookies.remove.mock.calls.filter((c) => c[0].storeId === "firefox-container-6");
+    expect(defaultRemoves).toHaveLength(3);
+    expect(containerRemoves).toHaveLength(3);
+  });
+
+  test("default-store removal still happens when enumeration throws", async () => {
+    browser.cookies.getAllCookieStores.mockRejectedValue(new Error("boom"));
+    await removeCookieFromStore("x-ms-RefreshTokenCredential");
+    const defaultRemoves = browser.cookies.remove.mock.calls.filter((c) => !c[0].storeId);
+    expect(defaultRemoves).toHaveLength(3);
+  });
+
+  test("no container enumeration under non-Thunderbird", async () => {
+    _internal.isThunderbird = false;
+    await removeCookieFromStore("x-ms-RefreshTokenCredential");
+    expect(browser.cookies.getAllCookieStores).not.toHaveBeenCalled();
+    expect(browser.cookies.remove).toHaveBeenCalledTimes(3); // default only
+  });
+
+  test("removes from multiple container stores", async () => {
+    browser.cookies.getAllCookieStores.mockResolvedValue([
+      { id: "firefox-default", tabIds: [] },
+      { id: "firefox-container-6", tabIds: [10] },
+      { id: "firefox-container-7", tabIds: [11] },
+    ]);
+    await removeCookieFromStore("x-ms-RefreshTokenCredential");
+    expect(browser.cookies.remove.mock.calls.filter((c) => c[0].storeId === "firefox-container-6")).toHaveLength(3);
+    expect(browser.cookies.remove.mock.calls.filter((c) => c[0].storeId === "firefox-container-7")).toHaveLength(3);
+  });
+});
+
+describe("loadHealthState guard against clobbering fresh state", () => {
+  test("restores persisted health when cookieExpiry is 0 (cold wake)", async () => {
+    _internal.cookieExpiry = 0;
+    _internal.brokerHealthy = true;
+    browser.storage.session.get.mockResolvedValue({
+      _health: { brokerHealthy: false, healthRetryAt: 123, cookieExpiry: 456 },
+    });
+    await loadHealthState();
+    expect(_internal.cookieExpiry).toBe(456);
+    expect(_internal.brokerHealthy).toBe(false);
+    expect(_internal.healthRetryAt).toBe(123);
+  });
+
+  test("does NOT clobber a fresh in-memory cookieExpiry/brokerHealthy", async () => {
+    _internal.cookieExpiry = 999999; // fresh value set by a concurrent refreshCookie
+    _internal.brokerHealthy = true;
+    browser.storage.session.get.mockResolvedValue({
+      _health: { brokerHealthy: false, healthRetryAt: 123, cookieExpiry: 456 },
+    });
+    await loadHealthState();
+    expect(_internal.cookieExpiry).toBe(999999);
+    expect(_internal.brokerHealthy).toBe(true);
+  });
+
+  test("does NOT restore over a fresh unhealthy state (concurrent broker failure)", async () => {
+    // markBrokerUnhealthy ran (brokerHealthy=false, healthRetryAt>0) but left cookieExpiry 0
+    _internal.cookieExpiry = 0;
+    _internal.brokerHealthy = false;
+    _internal.healthRetryAt = 55555;
+    browser.storage.session.get.mockResolvedValue({
+      _health: { brokerHealthy: true, healthRetryAt: 0, cookieExpiry: 888888 },
+    });
+    await loadHealthState();
+    expect(_internal.brokerHealthy).toBe(false); // not clobbered back to persisted true
+    expect(_internal.healthRetryAt).toBe(55555);
+    expect(_internal.cookieExpiry).toBe(0);
+  });
+});
+
+// ===== Container sync — PIV hardening (feature-detect, log secrecy, idempotency) =====
+
+describe("container-sync PIV hardening", () => {
+  const CONTAINER = { id: "firefox-container-6", tabIds: [10] };
+  function navContainer(url = "https://outlook.office.com/owa/", tabId = 10, frameId = 0) {
+    return onContainerNavigateListener({ url, tabId, frameId });
+  }
+  function warmCache() {
+    _internal.cachedCookie = { cookieName: "x-ms-RefreshTokenCredential", cookieContent: FUTURE_JWT };
+    _internal.cookieExpiry = Date.now() + 3600000;
+  }
+
+  test("no-op when getAllCookieStores is unavailable (feature-detect)", async () => {
+    warmCache();
+    const saved = browser.cookies.getAllCookieStores;
+    browser.cookies.getAllCookieStores = undefined;
+    try {
+      await navContainer();
+      expect(browser.cookies.set).not.toHaveBeenCalled();
+    } finally {
+      browser.cookies.getAllCookieStores = saved;
+    }
+  });
+
+  test("success log carries only storeId, never the JWT cookie content", async () => {
+    warmCache();
+    browser.cookies.getAllCookieStores.mockResolvedValue([{ id: "firefox-default", tabIds: [1] }, CONTAINER]);
+    await navContainer();
+    const containerLogs = logBuffer.filter((e) => e.source === "container");
+    expect(containerLogs.length).toBeGreaterThan(0);
+    for (const e of containerLogs) expect(e.msg).not.toContain(FUTURE_JWT);
+    expect(containerLogs.some((e) => e.msg.includes("firefox-container-6"))).toBe(true);
+  });
+
+  test("cookies.set rejection for a dead container store is caught (no crash)", async () => {
+    warmCache();
+    browser.cookies.getAllCookieStores.mockResolvedValue([{ id: "firefox-default", tabIds: [1] }, CONTAINER]);
+    browser.cookies.set.mockRejectedValue(new Error("dead store"));
+    await expect(navContainer()).resolves.toBeUndefined();
+  });
+
+  test("removeCookieFromStore is idempotent across repeated calls", async () => {
+    browser.cookies.getAllCookieStores.mockResolvedValue([{ id: "firefox-default", tabIds: [] }, CONTAINER]);
+    await removeCookieFromStore("x-ms-RefreshTokenCredential");
+    await expect(removeCookieFromStore("x-ms-RefreshTokenCredential")).resolves.toBeUndefined();
+  });
+});
+
+// ===== TB detection derivation: the getBrowserInfo -> isThunderbird gate itself =====
+
+describe("TB detection derivation (browserInfoReady chain)", () => {
+  afterEach(() => { vi.resetModules(); });
+  async function reimport() {
+    vi.resetModules();
+    const mod = await import("../../extension/background.js");
+    await mod._internal.browserInfoReady;
+    return mod;
+  }
+
+  test("getBrowserInfo name 'Thunderbird' derives isThunderbird=true", async () => {
+    browser.runtime.getBrowserInfo.mockResolvedValue({ name: "Thunderbird" });
+    expect((await reimport())._internal.isThunderbird).toBe(true);
+  });
+
+  test("getBrowserInfo name 'Firefox' derives isThunderbird=false", async () => {
+    browser.runtime.getBrowserInfo.mockResolvedValue({ name: "Firefox" });
+    expect((await reimport())._internal.isThunderbird).toBe(false);
+  });
+
+  test("getBrowserInfo absent (Chrome) derives isThunderbird=false", async () => {
+    const saved = browser.runtime.getBrowserInfo;
+    delete browser.runtime.getBrowserInfo;
+    try {
+      expect((await reimport())._internal.isThunderbird).toBe(false);
+    } finally {
+      browser.runtime.getBrowserInfo = saved;
+    }
+  });
+
+  test("getBrowserInfo rejection derives isThunderbird=false (fail-closed)", async () => {
+    browser.runtime.getBrowserInfo.mockRejectedValue(new Error("nope"));
+    expect((await reimport())._internal.isThunderbird).toBe(false);
+  });
+
+  test("stays false while browserInfoReady is pending, flips to true on resolve", async () => {
+    vi.resetModules();
+    let resolveInfo;
+    browser.runtime.getBrowserInfo.mockReturnValue(new Promise((r) => { resolveInfo = r; }));
+    const mod = await import("../../extension/background.js");
+    expect(mod._internal.isThunderbird).toBe(false); // pending
+    resolveInfo({ name: "Thunderbird" });
+    await mod._internal.browserInfoReady;
+    expect(mod._internal.isThunderbird).toBe(true);
   });
 });

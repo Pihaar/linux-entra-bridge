@@ -29,6 +29,9 @@
     },
     "allowed_spaces": ["mail", "calendar", "addressbook", "tasks", "settings", "default"]
   },
+  "options_ui": {
+    "page": "options.html"
+  },
   "background": {
     "scripts": ["background.js"],
     "type": "module"

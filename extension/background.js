@@ -17,9 +17,10 @@ import { api, truncateMsg } from "./lib.js";
 /** @typedef {{ ts: string, level: string, source: string, msg: string }} LogEntry */
 
 // --- Structured Logging ---
-// NOTE: On Chromium, the service worker can be terminated after 30s of inactivity.
-// The logBuffer is ephemeral and will be empty after restart. This is acceptable —
-// the primary audience uses Firefox/LibreWolf where the background script is persistent.
+// NOTE: In MV3 the background is non-persistent (service worker on Chromium, event
+// page on Firefox/Thunderbird): it is terminated when idle and restarted on a
+// registered event. The logBuffer is ephemeral and empty after each restart. This is
+// acceptable; the extension is event-driven and re-derives its state on wake.
 
 const LOG_MAX = 200;
 export const logBuffer = [];
@@ -84,6 +85,31 @@ const NONCE_GLOBAL_MAX = 5; // max broker calls per NONCE_GLOBAL_WINDOW_MS
 const NONCE_GLOBAL_WINDOW_MS = 10000; // 10s window for global rate limit
 const PRT_COOKIE_NAME = "x-ms-RefreshTokenCredential"; // The only cookie name the broker returns
 
+// Container cookie sync (Thunderbird OWA): OWA hosts that trigger mirroring the PRT
+// into a contextual-identity store. Matched at a label boundary (leading dot or exact),
+// so "evil-office.com" does NOT match "office.com".
+const OWA_HOST_SUFFIXES = ["office.com", "office365.com", "outlook.com", "cloud.microsoft"];
+// webNavigation URL filter for the container handler. login.* is intentionally NOT here:
+// the login auth request is a sub-frame (frameId != 0) and is filtered out anyway; adding
+// it would only make both onBeforeNavigate handlers fire on the same login navigation.
+const OWA_URL_FILTER = [
+  ...OWA_HOST_SUFFIXES.map((h) => ({ hostSuffix: "." + h })),
+  ...OWA_HOST_SUFFIXES.map((h) => ({ hostEquals: h })),
+];
+// Container-store allowlist: only Thunderbird's OWA contextual-identity stores. Fail-closed
+// — default/private/incognito and any unknown/future store id get nothing.
+export const CONTAINER_STORE_RE = /^firefox-container-\d+$/;
+
+/** True only for a Thunderbird OWA contextual-identity cookie store. */
+export function isContainerStore(store) {
+  return !!store && !store.incognito && CONTAINER_STORE_RE.test(store.id);
+}
+
+/** Label-boundary host match against the OWA allowlist (defense-in-depth vs. hostSuffix). */
+export function isOwaHost(hostname) {
+  return OWA_HOST_SUFFIXES.some((d) => hostname === d || hostname.endsWith("." + d));
+}
+
 // Internal mutable state — exported for test access via _internal.propertyName
 // Properties are mutable (const ref, mutable props). _internal prefix = test-only by convention.
 // WARNING: Never add background.js or lib.js to web_accessible_resources — _internal would leak to web pages.
@@ -104,7 +130,21 @@ export const _internal = {
   // SPA Background SSO (Feature 3) — set of granted hostnames
   grantedSpaOrigins: new Set(),
   pendingPolicyDomains: null, // domains from managed storage awaiting user gesture
+  // Container cookie sync (Thunderbird OWA): set async from runtime.getBrowserInfo()
+  isThunderbird: false,
+  browserInfoReady: Promise.resolve(), // replaced synchronously at module load below
 };
+
+// Thunderbird detection for the container-sync handler (TB-only). getBrowserInfo is
+// Gecko-only; on Chromium it is absent -> isThunderbird stays false. The cached promise
+// IS the assignment chain (awaited by the handler) and never rejects, so the TB gate is
+// fail-closed and cold-wake-safe. Assignment is top-level synchronous so it completes
+// before any queued webNavigation event is dispatched.
+_internal.browserInfoReady = (api.runtime.getBrowserInfo
+  ? api.runtime.getBrowserInfo()
+  : Promise.resolve(null)
+).then((info) => { _internal.isThunderbird = info?.name === "Thunderbird"; })
+  .catch(() => { _internal.isThunderbird = false; });
 
 // Chromium MV3: persist health state across service worker restarts.
 // storage.session survives SW termination but not browser restart.
@@ -123,7 +163,13 @@ export async function loadHealthState() {
   if (!sessionStore) return;
   try {
     const s = await sessionStore.get("_health");
-    if (s._health) {
+    // Only restore persisted health while ALL three fields are still at their cold-wake
+    // defaults (cookieExpiry 0, brokerHealthy true, healthRetryAt 0). The container-sync
+    // navigation can wake the event page and run refreshCookie() concurrently with this
+    // restore; guarding on the full default set avoids clobbering both a fresh SUCCESS
+    // (cookieExpiry > 0) and a fresh FAILURE (markBrokerUnhealthy set brokerHealthy=false /
+    // healthRetryAt>0 while cookieExpiry stayed 0).
+    if (s._health && _internal.cookieExpiry === 0 && _internal.brokerHealthy && _internal.healthRetryAt === 0) {
       _internal.brokerHealthy = s._health.brokerHealthy;
       _internal.healthRetryAt = s._health.healthRetryAt;
       _internal.cookieExpiry = s._health.cookieExpiry;
@@ -300,12 +346,14 @@ export function updateBadge() {
 
 /**
  * Set the PRT SSO cookie in the browser's cookie store for all SSO domains.
+ * @param {string} [storeId] - optional cookie-store id (Thunderbird OWA container mirror);
+ *   when omitted the cookie is written to the default store.
  */
-export async function setCookieInStore(cookieName, cookieContent, expiresAt) {
+export async function setCookieInStore(cookieName, cookieContent, expiresAt, storeId) {
   const expSec = Math.floor(expiresAt / 1000);
   await Promise.all(COOKIE_URLS.map(async (url) => {
     try {
-      await api.cookies.set({
+      const details = {
         url,
         name: cookieName,
         value: cookieContent,
@@ -314,7 +362,9 @@ export async function setCookieInStore(cookieName, cookieContent, expiresAt) {
         httpOnly: true, // cookie sent as HTTP header, JS on login pages doesn't need to read it
         sameSite: "no_restriction",
         expirationDate: expSec,
-      });
+      };
+      if (storeId) details.storeId = storeId; // omit key entirely for the default store
+      await api.cookies.set(details);
     } catch (_err) {
       ssoLog("warn", "cookie", `Failed to set cookie for ${url}`);
     }
@@ -322,9 +372,13 @@ export async function setCookieInStore(cookieName, cookieContent, expiresAt) {
 }
 
 /**
- * Remove the PRT SSO cookie from the browser's cookie store.
+ * Remove the PRT SSO cookie from the default cookie store, and (Thunderbird only) from any
+ * OWA container store. The default-store removal always runs first and unconditionally, so
+ * an account switch never leaves a stale PRT there even if container enumeration fails.
  */
 export async function removeCookieFromStore(cookieName) {
+  // Default store first, unconditionally — must succeed even if the enumeration below
+  // throws, so an account switch never leaves a stale PRT in the default store.
   await Promise.all(COOKIE_URLS.map(async (url) => {
     try {
       await api.cookies.remove({ url, name: cookieName });
@@ -332,18 +386,35 @@ export async function removeCookieFromStore(cookieName) {
       // ignore — cookie may not exist
     }
   }));
+  // Then the TB OWA container store(s), same gate as the mirror path (symmetry).
+  await _internal.browserInfoReady;
+  if (!_internal.isThunderbird || !api.cookies.getAllCookieStores) return;
+  try {
+    const stores = await api.cookies.getAllCookieStores();
+    await Promise.all(stores.filter(isContainerStore).flatMap((store) =>
+      COOKIE_URLS.map(async (url) => {
+        try {
+          await api.cookies.remove({ url, name: cookieName, storeId: store.id });
+        } catch {
+          // ignore — cookie may not exist in this store
+        }
+      })));
+  } catch {
+    ssoLog("warn", "container", "Container cookie cleanup failed");
+  }
 }
 
 /**
  * Compute cookie expiry from JWT claims (with fallback + 24h cap) and set in browser cookie store.
  * @param {CookieData} cookieData - Cookie data with cookieName and cookieContent
+ * @param {string} [storeId] - optional cookie-store id, passed through to setCookieInStore
  * @returns {Promise<number>} expiresAt timestamp in ms
  */
-export async function computeAndSetCookie(cookieData) {
+export async function computeAndSetCookie(cookieData, storeId) {
   const now = Date.now();
   const jwtExpiry = getCookieExpiry(cookieData.cookieContent);
   const expiresAt = Math.min(jwtExpiry || now + COOKIE_FALLBACK_TTL_MS, now + MAX_COOKIE_TTL_MS);
-  await setCookieInStore(cookieData.cookieName, cookieData.cookieContent, expiresAt);
+  await setCookieInStore(cookieData.cookieName, cookieData.cookieContent, expiresAt, storeId);
   return expiresAt;
 }
 
@@ -664,6 +735,70 @@ api.webNavigation.onBeforeNavigate.addListener(async (details) => {
     markBrokerUnhealthy();
   }
 }, { url: SSO_NONCE_FILTER });
+
+
+/**
+ * Container cookie sync (Thunderbird only).
+ *
+ * Thunderbird opens the embedded Exchange/OWA login window in its own contextual
+ * identity (a cookie store like "firefox-container-6"). cookies.set() without a storeId
+ * only reaches firefox-default, so the isolated OWA window never sees the PRT SSO cookie
+ * and Entra reports Conditional Access 530003 (device Unregistered). This handler mirrors
+ * the PRT into that container store on the OWA navigation.
+ *
+ * The PRT is a device-wide SSO credential, so mirroring is tightly gated:
+ *  - Thunderbird only (getBrowserInfo): in Firefox, containers can be attacker-influenced
+ *    (Temporary/Multi-Account Containers), so mirroring there would be a confused-deputy /
+ *    isolation break. Thunderbird has no add-on API to spawn containers.
+ *  - Domain gate (listener filter) + in-handler host recheck: only OWA navigations.
+ *  - frameId 0: earliest container navigation, before the login sub-frame request.
+ *  - Container-store allowlist (fail-closed): never default/private/incognito/unknown.
+ *
+ * Non-contractual assumptions (a break surfaces via the info log below, not silently):
+ * TB opens OWA in a contextual identity; tabId -> store resolves via getAllCookieStores();
+ * container ids match /^firefox-container-\d+$/. TB forks reporting a different runtime
+ * name (e.g. Betterbird) are a no-op (fail-closed).
+ *
+ * No per-store debounce: the store id is only known after awaits, so a debounce could not
+ * be atomic against the owa/->mail/ double navigation. The refreshCookie() reentrancy guard
+ * is the real dedup (both invocations share one broker call); worst case is an idempotent
+ * duplicate cookies.set.
+ */
+api.webNavigation.onBeforeNavigate.addListener(async (details) => {
+  try {
+    if (details.frameId !== 0) return;
+    await _internal.browserInfoReady;
+    if (!_internal.isThunderbird) return;
+
+    // Defense-in-depth host recheck: the registration filter is not enforced when tests
+    // call the listener directly, and hostSuffix lacks a label boundary. Cheap sync check
+    // first, before touching the cookie-store API.
+    let hostname;
+    try { hostname = new URL(details.url).hostname; } catch { return; }
+    if (!isOwaHost(hostname)) return;
+
+    if (!api.cookies.getAllCookieStores) return;
+    const stores = await api.cookies.getAllCookieStores();
+    const store = stores.find((s) => s.tabIds?.includes(details.tabId));
+    if (!isContainerStore(store)) {
+      // A found-but-non-container store may mean TB changed its OWA store scheme; surface
+      // it at debug level so the (non-contractual) assumption break is diagnosable, not silent.
+      if (store) ssoLog("debug", "container", "Tab store is not an OWA container: " + store.id);
+      return;
+    }
+
+    // refreshCookie() uses the cache + reentrancy guard and wakes the broker if needed
+    // (covers the cold event-page wake). On a cache miss it also refreshes the default
+    // store and reschedules the alarm — idempotent and desirable.
+    const cookie = await refreshCookie();
+    if (!cookie) return;
+
+    await computeAndSetCookie(cookie, store.id);
+    ssoLog("info", "container", "Mirrored PRT into store " + store.id);
+  } catch (err) {
+    ssoLog("warn", "container", "Container cookie sync failed: " + truncateMsg(err.message || String(err)));
+  }
+}, { url: OWA_URL_FILTER });
 
 
 /**

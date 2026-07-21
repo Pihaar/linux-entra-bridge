@@ -11,6 +11,7 @@ globalThis.browser = {
     onMessage: { addListener: vi.fn() },
     lastError: null,
     getManifest: vi.fn(() => ({ version: "0.1.0", manifest_version: 3, name: "Linux Entra Bridge" })),
+    getBrowserInfo: vi.fn().mockResolvedValue({ name: "Thunderbird", version: "128.0" }),
   },
   tabs: {
     query: vi.fn().mockResolvedValue([{ url: "https://example.com" }]),
@@ -27,6 +28,7 @@ globalThis.browser = {
     get: vi.fn().mockResolvedValue(null),
     set: vi.fn().mockResolvedValue(undefined),
     remove: vi.fn().mockResolvedValue(undefined),
+    getAllCookieStores: vi.fn().mockResolvedValue([{ id: "firefox-default", tabIds: [] }]),
   },
   storage: {
     local: {

@@ -56,6 +56,7 @@ microsoft-identity-broker (system service)
 - `secure: true` on all `cookies.set()` calls.
 - `sameSite: "no_restriction"` (required for cross-domain SSO).
 - `httpOnly: true`: the cookie is sent as an HTTP header automatically; JS on login pages does not need to read it, which prevents XSS-based cookie theft.
+- On Thunderbird the cookie is also mirrored into the OWA account-setup container store, so it rests in one additional persistent cookie partition on disk. At-rest protection of the browser profile relies on endpoint full-disk encryption (LUKS/BitLocker) and OS profile permissions, outside this extension's control.
 
 ### Fail securely
 
