@@ -47,5 +47,14 @@
     "https://login.microsoftonline.com/*",
     "https://login.microsoft.com/*",
     "https://login.live.com/*"
+  ],
+  "optional_host_permissions": [
+    "https://graph.microsoft.com/*",
+    "https://*.microsoft.com/*",
+    "https://*.microsoftonline.com/*",
+    "https://*.office.com/*",
+    "https://*.office365.com/*",
+    "https://*.sharepoint.com/*",
+    "https://*.azure.com/*"
   ]
 }

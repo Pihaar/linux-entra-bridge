@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Thunderbird: adding a Microsoft 365 / Exchange account via the embedded OWA login no longer fails with Conditional Access error 530003 ("device Unregistered"). Thunderbird opens that login window in its own contextual-identity cookie store (e.g. `firefox-container-6`), which the default `cookies.set()` did not reach; the PRT SSO cookie is now also mirrored into that container store. The mirror is Thunderbird-only and tightly gated (OWA domains, top-level navigation, container-store allowlist) so the device-wide credential is never spread into Firefox containers, private browsing, or incognito.
 - Thunderbird: added the options page (`options_ui`), which was present on Firefox/Chromium but missing on Thunderbird.
+- Thunderbird: the opt-in Device compliance toggle can now be enabled. `thunderbird.json` was missing the `optional_host_permissions` block (graph.microsoft.com and the other Microsoft origins) that the options page requests via `permissions.request()`, so enabling the toggle silently reverted.
 
 ### Known limitations
 - If Entra requires a nonce-bound Conditional Access flow inside the OWA window, only the generic PRT is mirrored into the container (the nonce cookie stays in the default store). The generic PRT resolves 530003 in practice.
